@@ -12,6 +12,7 @@ Work in progress
 ## TODO
 
 - Pass a `seed` as input and all the generation should be deterministic
+- Report stats upon generating the fixture (e.g. how many messages per category)
+- Publish first fixture in GitHub releases
 - CLI
 - Automated tests
-- Publish first fixture in GitHub releases

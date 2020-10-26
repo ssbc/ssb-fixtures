@@ -83,7 +83,9 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   }
 
   for (let i of range(0, numMessages - 1)) {
-    const author = paretoSample(authors);
+    let author = paretoSample(authors);
+    // LATESTMSG is always authored by database owner
+    if (i === numMessages - 1) author = peer.createFeed(peer.keys);
     var [err, posted]: [any, Msg?] = await run<any>(author.add)(
       generateMsg(i, numMessages, author, msgsByType, authors, follows, blocks),
     );
@@ -97,7 +99,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       if (posted.value.content.type === 'contact') {
         updateFollowsAndBlocks(posted as Msg<ContactContent>);
       }
-      console.log(`${JSON.stringify(posted, null, 2)}\n`);
+      // console.log(`${JSON.stringify(posted, null, 2)}\n`);
     }
   }
 

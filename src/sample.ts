@@ -21,5 +21,5 @@ export function uniformSample<T>(arr: Array<T>): T {
 }
 
 export function somewhatGaussian() {
-  return (Math.random() + Math.random()) * 0.3333;
+  return (Math.random() + Math.random()) * 0.5;
 }

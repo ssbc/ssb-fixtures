@@ -1,6 +1,10 @@
 # ssb-fixtures
 
-Work in progress
+A generator of fake ("Lorem ipsum") .ssb databases.
+
+```
+npx ssb-fixtures --messages=1000 --authors=100
+```
 
 ## Features
 

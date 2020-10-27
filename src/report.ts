@@ -58,7 +58,7 @@ function* produceReport(
   yield '';
   yield `The main feed is ${self.id} (hop 0).`;
   yield '';
-  yield `There are ${msgs.length} msgs in total`;
+  yield `There are ${msgs.length} msgs in total, from ${authors.length} possible authors.`;
   yield '';
 
   yield '## Messages per type';

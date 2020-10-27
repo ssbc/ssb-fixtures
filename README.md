@@ -13,3 +13,5 @@ Work in progress
 
 - Publish first fixture in GitHub releases
 - Automated tests
+- Generate the timestamps deterministically
+- Generate "updated" fixture to simulate a second resync

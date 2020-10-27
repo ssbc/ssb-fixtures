@@ -12,5 +12,4 @@ Work in progress
 ## TODO
 
 - Publish first fixture in GitHub releases
-- CLI
 - Automated tests

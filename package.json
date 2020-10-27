@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Generate a simulated .ssb folder",
   "main": "lib/index.js",
+  "bin": "bin.js",
   "scripts": {
     "compile": "tsc",
     "start": "npm run compile && node bin"
@@ -27,6 +28,7 @@
     "ssb-logging": "^1.0.0",
     "ssb-master": "^1.0.3",
     "ssb-typescript": "^2.1.0",
-    "typescript": "^4.0.3"
+    "typescript": "^4.0.3",
+    "yargs": "^16.1.0"
   }
 }

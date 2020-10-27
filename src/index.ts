@@ -31,7 +31,6 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
   const authors = authorsKeys.map((keys) => peer.createFeed(keys));
-  console.log(authors.map((a) => a.id));
 
   const follows: Follows = new Map(authors.map((a) => [a.id, new Set()]));
   const blocks: Blocks = new Map(authors.map((a) => [a.id, new Set()]));

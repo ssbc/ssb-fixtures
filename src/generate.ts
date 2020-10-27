@@ -88,10 +88,13 @@ function generatePostMsg(
   }
   if (
     i < numMessages - 1 && // Don't make the last msg a reply, it should be root
-    msgsByType.post?.length && // Only reply if there are other post
+    (msgsByType.post?.length ?? 0) >= 2 && // Only reply if there are other post
     random(seed) < freq.POST_REPLY_FREQUENCY
   ) {
-    const other = paretoSample(seed, msgsByType.post) as Msg<PostContent>;
+    const min = 1; // avoid 0, to never reply to the OLDESTMSG
+    const other = paretoSample(seed, msgsByType.post!, 1.6, min) as Msg<
+      PostContent
+    >;
     if (other.value.content?.root) {
       if (random(seed) < freq.POST_REPLY_FORK_FREQUENCY) {
         content.root = other.key;

@@ -51,8 +51,8 @@ export = async function generateFixture(opts?: Partial<Opts>) {
 
   for (let i of range(0, numMessages - 1)) {
     let author = paretoSample(seed, authors);
-    // LATESTMSG is always authored by database owner
-    if (i === numMessages - 1) author = authors[0];
+    // OLDESTMSG and LATESTMSG are always authored by database owner
+    if (i === 0 || i === numMessages - 1) author = authors[0];
     var [err, posted]: [any, Msg?] = await run<any>(author.add)(
       generateMsg(
         seed,

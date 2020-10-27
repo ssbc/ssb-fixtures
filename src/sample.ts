@@ -29,8 +29,12 @@ export function paretoSample<T>(
   seed: string,
   arr: Array<T>,
   shapeParam: number = 2,
+  min: number = 0,
 ): T {
-  const i = Math.floor(Math.pow(random(seed), shapeParam) * arr.length);
+  const i = Math.max(
+    min,
+    Math.floor(Math.pow(random(seed), shapeParam) * arr.length),
+  );
   return arr[i];
 }
 

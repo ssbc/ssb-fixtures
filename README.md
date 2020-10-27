@@ -9,6 +9,14 @@ Work in progress
 - Oldest msg is always `type=post` and contains the text "OLDESTMSG"
 - Most recent msg is always `type=post` and contains the text "LATESTMSG"
 
+## Versioning
+
+This **does not follow SemVer**. That's because we want to version the datasets primarily, not the code that produces the dataset. This is how we update versions M.m.p:
+
+- `M`: updated when the dataset changes even when parameters `seed`, `messages`, `authors` remain the same
+- `m`: updated when the source code and CLI get breaking changes or new features, i.e. noticeable changes
+- `p`: update when the source code and CLI receive bug fixes
+
 ## TODO
 
 - Publish first fixture in GitHub releases

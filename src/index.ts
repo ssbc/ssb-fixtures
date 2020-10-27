@@ -1,13 +1,10 @@
 import {ContactContent, Msg} from 'ssb-typescript';
 import run = require('promisify-tuple');
-import os = require('os');
-import fs = require('fs');
 import path = require('path');
 import generateMsg from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
 import {paretoSample} from './sample';
-const mkdirp = require('mkdirp');
-const rimraf = require('rimraf');
+import slimify from './slimify';
 const ssbKeys = require('ssb-keys');
 const SecretStack = require('secret-stack');
 const makeConfig = require('ssb-config/inject');
@@ -18,21 +15,6 @@ function* range(start: number, end: number) {
   while (i <= end) {
     yield i;
     i++;
-  }
-}
-
-function slimify(outputDir: string) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssb-fixture-gen-'));
-  const preserved = ['secret', 'flume/log.offset'];
-  for (let p of preserved) {
-    mkdirp.sync(path.dirname(path.join(tmpDir, p)));
-    fs.copyFileSync(path.join(outputDir, p), path.join(tmpDir, p));
-  }
-  rimraf.sync(outputDir);
-  fs.mkdirSync(outputDir);
-  for (let p of preserved) {
-    mkdirp.sync(path.dirname(path.join(outputDir, p)));
-    fs.copyFileSync(path.join(tmpDir, p), path.join(outputDir, p));
   }
 }
 

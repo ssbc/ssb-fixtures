@@ -1,13 +1,14 @@
-import {ContactContent, Msg} from 'ssb-typescript';
-import run = require('promisify-tuple');
 import path = require('path');
+import run = require('promisify-tuple');
+import {ContactContent, Msg} from 'ssb-typescript';
+const ssbKeys = require('ssb-keys');
+const SecretStack = require('secret-stack');
+const makeConfig = require('ssb-config/inject');
 import generateMsg from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
 import {paretoSample} from './sample';
 import slimify from './slimify';
-const ssbKeys = require('ssb-keys');
-const SecretStack = require('secret-stack');
-const makeConfig = require('ssb-config/inject');
+import writeReportFile from './report';
 
 function* range(start: number, end: number) {
   if (start > end) return;
@@ -23,6 +24,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const numMessages = Math.max(opts?.messages ?? 1e4, 1);
   const numAuthors = Math.max(opts?.authors ?? 150, 1);
   const slim = opts?.slim ?? true;
+  const report = opts?.report ?? true;
 
   const peer = SecretStack({appKey: require('ssb-caps').shs})
     .use(require('ssb-master'))
@@ -42,6 +44,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       }),
     );
 
+  const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
   const authors = Array.from(range(1, numAuthors))
     .map((_, i) => (i === 0 ? peer.keys : ssbKeys.generate()))
@@ -76,6 +79,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       console.error(err);
       process.exit(1);
     } else if (posted?.value.content) {
+      msgs.push(posted);
       msgsByType[posted.value.content.type!] ??= [];
       msgsByType[posted.value.content.type!]!.push(posted);
       if (posted.value.content.type === 'contact') {
@@ -83,6 +87,10 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       }
       // console.log(`${JSON.stringify(posted, null, 2)}\n`);
     }
+  }
+
+  if (report) {
+    writeReportFile(msgs, msgsByType, authors, follows, outputDir);
   }
 
   peer.close(() => {

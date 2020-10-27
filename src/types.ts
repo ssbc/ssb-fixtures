@@ -6,6 +6,7 @@ export type Opts = {
   messages: number;
   authors: number;
   slim: boolean;
+  report: boolean;
 };
 
 export type MsgType = keyof typeof freq.MSG_TYPE_FREQUENCIES;

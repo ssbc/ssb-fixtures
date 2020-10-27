@@ -1,4 +1,5 @@
 import crypto = require('crypto');
+const ssbKeys = require('ssb-keys');
 import {LoremIpsum} from 'lorem-ipsum';
 import {
   ContactContent,
@@ -14,60 +15,64 @@ import {
   randomInt,
   sampleCollection,
   somewhatGaussian,
+  random,
 } from './sample';
 import {Author, Blocks, Follows, MsgsByType} from './types';
 
-const lorem = new LoremIpsum({
-  sentencesPerParagraph: {
-    max: 8,
-    min: 4,
-  },
-  wordsPerSentence: {
-    max: 16,
-    min: 4,
-  },
-});
+let __lorem: any;
+
+export function generateRandomSeed() {
+  return crypto
+    .randomBytes(64)
+    .toString('ascii')
+    .replace(/\W/g, '')
+    .substr(0, 24);
+}
 
 function generateBlobId() {
   return '&' + crypto.randomBytes(32).toString('base64') + '.sha256';
 }
 
-function generateMentions(authors: Array<Author>) {
-  return Array.from({length: randomInt(1, 4)}, () => {
-    const mentionType = sampleCollection(freq.MENTION_LINK_FREQUENCIES);
+function generateMentions(seed: string, authors: Array<Author>) {
+  return Array.from({length: randomInt(seed, 1, 4)}, () => {
+    const mentionType = sampleCollection(seed, freq.MENTION_LINK_FREQUENCIES);
     if (mentionType === 'author') {
-      const author = paretoSample(authors);
-      return {link: author.id, name: lorem.generateWords(randomInt(1, 3))};
+      const author = paretoSample(seed, authors);
+      return {
+        link: author.id,
+        name: __lorem.generateWords(randomInt(seed, 1, 3)),
+      };
     } else if (mentionType === 'blob') {
       return {
         link: generateBlobId(),
-        type: sampleCollection(freq.BLOB_TYPE_FREQUENCIES),
-        size: Math.round(somewhatGaussian() * 2e6),
-        ...(Math.random() < freq.MENTION_BLOB_NAME_FREQUENCY
+        type: sampleCollection(seed, freq.BLOB_TYPE_FREQUENCIES),
+        size: Math.round(somewhatGaussian(seed) * 2e6),
+        ...(random(seed) < freq.MENTION_BLOB_NAME_FREQUENCY
           ? {
-              name: lorem.generateWords(randomInt(1, 3)),
+              name: __lorem.generateWords(randomInt(seed, 1, 3)),
             }
           : {}),
       };
     } else if (mentionType === 'channel') {
-      return {link: '#' + lorem.generateWords(1)};
+      return {link: '#' + __lorem.generateWords(1)};
     }
   });
 }
 
 function generatePostMsg(
+  seed: string,
   i: number,
   numMessages: number,
   msgsByType: MsgsByType,
   authors: Array<Author>,
 ): PostContent {
-  const textSize = sampleCollection(freq.POST_SIZE_FREQUENCIES);
+  const textSize = sampleCollection(seed, freq.POST_SIZE_FREQUENCIES);
   const text =
     textSize === 'short'
-      ? lorem.generateWords(randomInt(1, 5))
+      ? __lorem.generateWords(randomInt(seed, 1, 5))
       : textSize === 'medium'
-      ? lorem.generateSentences(randomInt(1, 5))
-      : lorem.generateParagraphs(randomInt(1, 5));
+      ? __lorem.generateSentences(randomInt(seed, 1, 5))
+      : __lorem.generateParagraphs(randomInt(seed, 1, 5));
   const content: PostContent = {
     type: 'post',
     text,
@@ -78,17 +83,17 @@ function generatePostMsg(
   if (i === numMessages - 1) {
     content.text = 'LATESTMSG ' + content.text;
   }
-  if (Math.random() < freq.POST_CHANNEL_FREQUENCY) {
-    content.channel = lorem.generateWords(1);
+  if (random(seed) < freq.POST_CHANNEL_FREQUENCY) {
+    content.channel = __lorem.generateWords(1);
   }
   if (
     i < numMessages - 1 && // Don't make the last msg a reply, it should be root
     msgsByType.post?.length && // Only reply if there are other post
-    Math.random() < freq.POST_REPLY_FREQUENCY
+    random(seed) < freq.POST_REPLY_FREQUENCY
   ) {
-    const other = paretoSample(msgsByType.post) as Msg<PostContent>;
+    const other = paretoSample(seed, msgsByType.post) as Msg<PostContent>;
     if (other.value.content?.root) {
-      if (Math.random() < freq.POST_REPLY_FORK_FREQUENCY) {
+      if (random(seed) < freq.POST_REPLY_FORK_FREQUENCY) {
         content.root = other.key;
         content.branch = other.key;
         (content as any).fork = other.value.content.root;
@@ -101,25 +106,26 @@ function generatePostMsg(
       content.branch = other.key;
     }
   }
-  if (Math.random() < freq.POST_MENTIONS_FREQUENCY) {
-    content.mentions = generateMentions(authors);
+  if (random(seed) < freq.POST_MENTIONS_FREQUENCY) {
+    content.mentions = generateMentions(seed, authors);
   }
   return content;
 }
 
-function generateVoteMsg(msgsByType: MsgsByType): VoteContent {
-  const other: Msg = paretoSample(msgsByType.post!);
+function generateVoteMsg(seed: string, msgsByType: MsgsByType): VoteContent {
+  const other: Msg = paretoSample(seed, msgsByType.post!);
   return {
     type: 'vote',
     vote: {
       link: other.key,
-      value: Math.random() < freq.VOTE_NEGATIVE_FREQUENCY ? -1 : +1,
+      value: random(seed) < freq.VOTE_NEGATIVE_FREQUENCY ? -1 : +1,
       expression: 'y',
     },
   };
 }
 
 function generateContactMsg(
+  seed: string,
   author: Author,
   authors: Array<Author>,
   follows: Follows,
@@ -128,22 +134,22 @@ function generateContactMsg(
   // Sample other authors, but don't sample ourself
   let contact: FeedId;
   do {
-    contact = paretoSample(authors).id;
+    contact = paretoSample(seed, authors).id;
   } while (contact === author.id);
 
-  let subtype = sampleCollection(freq.CONTACT_TYPE_FREQUENCIES);
+  let subtype = sampleCollection(seed, freq.CONTACT_TYPE_FREQUENCIES);
   const authorFollows = follows.get(author.id)!;
   const authorBlocks = blocks.get(author.id)!;
 
   if (subtype === 'unfollow') {
     if (authorFollows.size > 0) {
-      contact = uniformSample(Array.from(authorFollows));
+      contact = uniformSample(seed, Array.from(authorFollows));
     } else {
       subtype = 'follow';
     }
   } else if (subtype === 'unblock') {
     if (authorBlocks.size > 0) {
-      contact = uniformSample(Array.from(authorBlocks));
+      contact = uniformSample(seed, Array.from(authorBlocks));
     } else {
       subtype = 'block';
     }
@@ -157,7 +163,16 @@ function generateContactMsg(
   return content;
 }
 
-export default function generateMsg(
+export function generateAuthors(seed: string, numAuthors: number) {
+  return Array.from({length: numAuthors}, (_, i) => {
+    const ed25519seed = Buffer.alloc(32);
+    Buffer.from(`${i}${seed}`, 'utf-8').copy(ed25519seed);
+    return ssbKeys.generate('ed25519', ed25519seed);
+  });
+}
+
+export function generateMsg(
+  seed: string,
   i: number,
   numMessages: number,
   author: Author,
@@ -166,17 +181,29 @@ export default function generateMsg(
   follows: Follows,
   blocks: Blocks,
 ) {
-  const type = sampleCollection(freq.MSG_TYPE_FREQUENCIES);
+  __lorem = new LoremIpsum({
+    random: random,
+    sentencesPerParagraph: {
+      max: 8,
+      min: 4,
+    },
+    wordsPerSentence: {
+      max: 16,
+      min: 4,
+    },
+  });
+
+  const type = sampleCollection(seed, freq.MSG_TYPE_FREQUENCIES);
   // Oldest and latest msgs are always a post
   if (i === 0 || i === numMessages - 1) {
-    return generatePostMsg(i, numMessages, msgsByType, authors);
+    return generatePostMsg(seed, i, numMessages, msgsByType, authors);
   } else if (type === 'vote' && msgsByType.post?.length) {
-    return generateVoteMsg(msgsByType);
+    return generateVoteMsg(seed, msgsByType);
   } else if (type === 'contact') {
-    return generateContactMsg(author, authors, follows, blocks);
+    return generateContactMsg(seed, author, authors, follows, blocks);
   } else if (type === 'post') {
-    return generatePostMsg(i, numMessages, msgsByType, authors);
+    return generatePostMsg(seed, i, numMessages, msgsByType, authors);
   } else {
-    return generatePostMsg(i, numMessages, msgsByType, authors);
+    return generatePostMsg(seed, i, numMessages, msgsByType, authors);
   }
 }

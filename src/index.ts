@@ -1,10 +1,8 @@
 import path = require('path');
 import run = require('promisify-tuple');
 import {ContactContent, Msg} from 'ssb-typescript';
-const ssbKeys = require('ssb-keys');
-const SecretStack = require('secret-stack');
-const makeConfig = require('ssb-config/inject');
-import generateMsg from './generate';
+import {makeSsbPeer} from './ssb';
+import {generateRandomSeed, generateAuthors, generateMsg} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
 import {paretoSample} from './sample';
 import slimify from './slimify';
@@ -23,32 +21,17 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const outputDir = opts?.outputDir ?? path.join(process.cwd(), 'data');
   const numMessages = Math.max(opts?.messages ?? 1e4, 1);
   const numAuthors = Math.max(opts?.authors ?? 150, 1);
+  const seed = opts?.seed ?? generateRandomSeed();
   const slim = opts?.slim ?? true;
   const report = opts?.report ?? true;
 
-  const peer = SecretStack({appKey: require('ssb-caps').shs})
-    .use(require('ssb-master'))
-    .use(require('ssb-logging'))
-    .use(require('ssb-db'))
-    .call(
-      null,
-      makeConfig('ssb', {
-        path: outputDir,
-        logging: {
-          level: 'info',
-        },
-        connections: {
-          incoming: {},
-          outgoing: {},
-        },
-      }),
-    );
+  const authorsKeys = generateAuthors(seed, numAuthors);
+  const peer = makeSsbPeer(authorsKeys, outputDir);
 
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
-  const authors = Array.from(range(1, numAuthors))
-    .map((_, i) => (i === 0 ? peer.keys : ssbKeys.generate()))
-    .map((keys) => peer.createFeed(keys));
+  const authors = authorsKeys.map((keys) => peer.createFeed(keys));
+  console.log(authors.map((a) => a.id));
 
   const follows: Follows = new Map(authors.map((a) => [a.id, new Set()]));
   const blocks: Blocks = new Map(authors.map((a) => [a.id, new Set()]));
@@ -68,11 +51,20 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   }
 
   for (let i of range(0, numMessages - 1)) {
-    let author = paretoSample(authors);
+    let author = paretoSample(seed, authors);
     // LATESTMSG is always authored by database owner
-    if (i === numMessages - 1) author = peer.createFeed(peer.keys);
+    if (i === numMessages - 1) author = authors[0];
     var [err, posted]: [any, Msg?] = await run<any>(author.add)(
-      generateMsg(i, numMessages, author, msgsByType, authors, follows, blocks),
+      generateMsg(
+        seed,
+        i,
+        numMessages,
+        author,
+        msgsByType,
+        authors,
+        follows,
+        blocks,
+      ),
     );
 
     if (err) {

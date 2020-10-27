@@ -11,7 +11,6 @@ Work in progress
 
 ## TODO
 
-- Pass a `seed` as input and all the generation should be deterministic
 - Publish first fixture in GitHub releases
 - CLI
 - Automated tests

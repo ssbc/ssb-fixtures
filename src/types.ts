@@ -3,6 +3,7 @@ import freq = require('./frequencies');
 
 export type Opts = {
   outputDir: string;
+  seed: string;
   messages: number;
   authors: number;
   slim: boolean;

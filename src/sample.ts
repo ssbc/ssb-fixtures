@@ -9,6 +9,11 @@ function instanceSeed(seed: string) {
   return iseed;
 }
 
+export function reset() {
+  __x = 0;
+  __seed = '';
+}
+
 export function random(seed?: string) {
   if (!__seed && seed) __seed = seed;
   if (!__seed && !seed) throw new Error('missing seed!');

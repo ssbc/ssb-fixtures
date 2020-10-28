@@ -7,9 +7,13 @@ const codec = require('flumecodec');
 const Flume = require('flumedb');
 const rimraf = require('rimraf');
 const pull = require('pull-stream');
+const __ts = require('monotonic-timestamp');
+const __sampling = require('../lib/sample');
 const generate = require('../lib/index');
 
 function generateAndTest(opts, cb) {
+  __ts.reset();
+  __sampling.reset();
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), opts.outputDir));
 
   generate({
@@ -119,6 +123,48 @@ test('generation is seed-based deterministic', (t) => {
           timestamp: 1438787625000,
         },
         'third message matches',
+      );
+
+      cleanup(() => {
+        t.end();
+      });
+    },
+  );
+});
+
+test('marks first and last msg as OLDESTMSG and LATESTMSG', (t) => {
+  generateAndTest(
+    {
+      outputDir: 'ssb-fixtures-test-2',
+      seed: 'firstmsg',
+      messages: 3,
+      authors: 1,
+    },
+    (err, msgs, cleanup) => {
+      t.error(err, 'no error');
+      t.equals(msgs.length, 3, 'there are 3 msgs');
+
+      t.equals(msgs[0].value.content.type, 'post', 'first msg is a post');
+      t.true(
+        msgs[0].value.content.text.startsWith,
+        'OLDESTMSG ',
+        'first msg is prefixed with OLDESTMSG',
+      );
+
+      t.true(
+        !msgs[1].value.content.text.startsWith('OLDESTMSG'),
+        'in between msgs dont have OLDESTMSG prefix',
+      );
+      t.true(
+        !msgs[1].value.content.text.startsWith('LATESTMSG'),
+        'in between msgs dont have LATESTMSG prefix',
+      );
+
+      t.equals(msgs[2].value.content.type, 'post', 'last msg is a post');
+      t.true(
+        msgs[2].value.content.text.startsWith,
+        'LATESTMSG ',
+        'last msg is prefixed with LATESTMSG',
       );
 
       cleanup(() => {

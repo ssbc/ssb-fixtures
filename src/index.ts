@@ -25,6 +25,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const slim = opts?.slim ?? defaults.SLIM;
   const report = opts?.report ?? defaults.REPORT;
   const latestmsg = (opts?.latestmsg ?? numMessages) - 1;
+  const verbose = opts?.verbose ?? defaults.VERBOSE;
 
   const authorsKeys = generateAuthors(seed, numAuthors);
   const ssb = makeSSB(authorsKeys, outputDir);
@@ -77,7 +78,9 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       if (posted.value.content.type === 'contact') {
         updateFollowsAndBlocks(posted as Msg<ContactContent>);
       }
-      // console.log(`${JSON.stringify(posted, null, 2)}\n`);
+      if (verbose) {
+        console.log(`${JSON.stringify(posted, null, 2)}\n`);
+      }
     }
   }
 

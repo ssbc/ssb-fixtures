@@ -23,6 +23,9 @@ const argv = yargs(process.argv)
 
   .describe('latestmsg', '1-based index position of the LATESTMSG')
 
+  .describe('verbose', 'Print all generated msgs to stdout')
+  .default('verbose', defaults.VERBOSE)
+
   .usage('ssb-fixtures [opts]').argv;
 
 generate(argv);

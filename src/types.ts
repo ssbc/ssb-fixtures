@@ -9,6 +9,7 @@ export type Opts = {
   slim: boolean;
   report: boolean;
   latestmsg: number;
+  verbose: boolean;
 };
 
 export type MsgType = keyof typeof freq.MSG_TYPE_FREQUENCIES;

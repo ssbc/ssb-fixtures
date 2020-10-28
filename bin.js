@@ -7,6 +7,7 @@ const argv = yargs(process.argv)
   .describe('outputDir', 'Directory for the output fixture')
   .describe('slim', 'Keep only essential flume files in the fixture')
   .describe('report', 'Create a report.md file in the fixture')
+  .describe('latestmsg', '1-based index position of the LATESTMSG')
   .usage('ssb-fixtures [opts]').argv;
 const generate = require('./lib/index');
 

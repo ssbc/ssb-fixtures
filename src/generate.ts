@@ -86,7 +86,7 @@ function generateRecipients(
 function generatePostMsg(
   seed: string,
   i: number,
-  numMessages: number,
+  latestmsg: number,
   msgsByType: MsgsByType,
   authors: Array<Author>,
   type: 'private' | 'post' = 'post',
@@ -106,7 +106,7 @@ function generatePostMsg(
   if (i === 0) {
     content.text = 'OLDESTMSG ' + content.text;
   }
-  if (i === numMessages - 1) {
+  if (i === latestmsg) {
     content.text = 'LATESTMSG ' + content.text;
   }
   // Channel
@@ -116,7 +116,7 @@ function generatePostMsg(
   // Replies
   if (
     type !== 'private' && // Private msg should not reply to `other` public msg
-    i < numMessages - 1 && // Don't make the last msg a reply, it should be root
+    i < latestmsg && // Don't make the last msg a reply, it should be root
     (msgsByType.post?.length ?? 0) >= 2 && // Only reply if there are other post
     random(seed) < freq.POST_REPLY_FREQUENCY
   ) {
@@ -148,7 +148,7 @@ function generatePostMsg(
 function generatePrivateMsg(
   seed: string,
   i: number,
-  numMessages: number,
+  latestmsg: number,
   msgsByType: MsgsByType,
   author: Author,
   authors: Array<Author>,
@@ -156,7 +156,7 @@ function generatePrivateMsg(
   const content: Privatable<PostContent> = generatePostMsg(
     seed,
     i,
-    numMessages,
+    latestmsg,
     msgsByType,
     authors,
     'private',
@@ -283,7 +283,7 @@ function generateAboutMsg(
 export function generateMsg(
   seed: string,
   i: number,
-  numMsgs: number,
+  latestmsg: number,
   author: Author,
   msgsByType: MsgsByType,
   authors: Array<Author>,
@@ -304,8 +304,8 @@ export function generateMsg(
 
   const type = sampleCollection(seed, freq.MSG_TYPE_FREQUENCIES);
   // Oldest and latest msgs are always a post authored by database owner
-  if (i === 0 || i === numMsgs - 1) {
-    return generatePostMsg(seed, i, numMsgs, msgsByType, authors);
+  if (i === 0 || i === latestmsg) {
+    return generatePostMsg(seed, i, latestmsg, msgsByType, authors);
   } else if (type === 'vote' && msgsByType.post?.length) {
     return generateVoteMsg(seed, msgsByType);
   } else if (type === 'contact') {
@@ -313,10 +313,11 @@ export function generateMsg(
   } else if (type === 'about') {
     return generateAboutMsg(seed, author, authors);
   } else if (type === 'private') {
-    return generatePrivateMsg(seed, i, numMsgs, msgsByType, author, authors);
+    const [a, as] = [author, authors]; // sorry Prettier, i want a one-liner
+    return generatePrivateMsg(seed, i, latestmsg, msgsByType, a, as);
   } else if (type === 'post') {
-    return generatePostMsg(seed, i, numMsgs, msgsByType, authors);
+    return generatePostMsg(seed, i, latestmsg, msgsByType, authors);
   } else {
-    return generatePostMsg(seed, i, numMsgs, msgsByType, authors);
+    return generatePostMsg(seed, i, latestmsg, msgsByType, authors);
   }
 }

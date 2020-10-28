@@ -137,3 +137,52 @@ test('can generate about msgs', (t) => {
     },
   );
 });
+
+test('latestmsg and same seed can continue generating', (t) => {
+  generateAndTest(
+    {
+      outputDir: 'ssb-fixtures-test-4',
+      seed: 'deterministic',
+      messages: 5,
+      authors: 2,
+      latestmsg: 3,
+    },
+    (err, msgs, cleanup) => {
+      t.error(err, 'no error');
+      t.equals(msgs.length, 5, 'there are 5 msgs');
+      t.deepEquals(
+        msgs[0],
+        require('./fixtures/deterministic/0.json'),
+        'first message matches',
+      );
+
+      t.deepEquals(
+        msgs[1],
+        require('./fixtures/deterministic/1.json'),
+        'second message matches',
+      );
+
+      t.deepEquals(
+        msgs[2],
+        require('./fixtures/deterministic/2.json'),
+        'third message matches',
+      );
+
+      t.deepEquals(
+        msgs[3],
+        require('./fixtures/deterministic/3-extension.json'),
+        'forth message matches',
+      );
+
+      t.deepEquals(
+        msgs[4],
+        require('./fixtures/deterministic/4-extension.json'),
+        'fifth message matches',
+      );
+
+      cleanup(() => {
+        t.end();
+      });
+    },
+  );
+});

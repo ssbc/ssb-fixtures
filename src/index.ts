@@ -24,6 +24,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const seed = opts?.seed ?? generateRandomSeed();
   const slim = opts?.slim ?? true;
   const report = opts?.report ?? true;
+  const latestmsg = (opts?.latestmsg ?? numMessages) - 1;
 
   const authorsKeys = generateAuthors(seed, numAuthors);
   const ssb = makeSSB(authorsKeys, outputDir);
@@ -52,12 +53,12 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   for (let i of range(0, numMessages - 1)) {
     let author = paretoSample(seed, authors);
     // OLDESTMSG and LATESTMSG are always authored by database owner
-    if (i === 0 || i === numMessages - 1) author = authors[0];
+    if (i === 0 || i === latestmsg) author = authors[0];
     var [err, posted]: [any, Msg?] = await run<any>(author.add)(
       generateMsg(
         seed,
         i,
-        numMessages,
+        latestmsg,
         author,
         msgsByType,
         authors,

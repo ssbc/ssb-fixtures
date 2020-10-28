@@ -17,6 +17,8 @@ npx ssb-fixtures --messages=1000 --authors=100
 - Generates private `post` msgs
 - Oldest msg is always `type: post` and contains the text "OLDESTMSG"
 - Most recent msg is always `type: post` and contains the text "LATESTMSG"
+- Can generate an "extended" fixture
+  - `npx ssb-fixtures --messages=1050 --authors=100 --latestmsg=1000` contains 50 more new messages more than `npx ssb-fixtures --messages=1000 --authors=100`
 
 ## Versioning
 
@@ -28,9 +30,8 @@ This **does not follow SemVer**. That's because we want to version the datasets 
 
 ## TODO
 
+- Store other accounts with their secret too, to recover private messages
 - Run tests in CI
 - Publish first fixture in GitHub releases, from CI hopefully
-- Store other accounts with their secret too, to recover private messages
 - Generate channel messages
 - Private threads (currently all private messages are "root")
-- Generate "updated" fixture to simulate a second resync

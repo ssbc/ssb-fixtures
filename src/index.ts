@@ -1,12 +1,12 @@
-import path = require('path');
 import run = require('promisify-tuple');
 import {ContactContent, Msg} from 'ssb-typescript';
 import {makeSSB} from './ssb';
-import {generateRandomSeed, generateAuthors, generateMsg} from './generate';
+import {generateAuthors, generateMsg} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
 import {paretoSample} from './sample';
 import slimify from './slimify';
 import writeReportFile from './report';
+import * as defaults from './defaults';
 
 function* range(start: number, end: number) {
   if (start > end) return;
@@ -18,12 +18,12 @@ function* range(start: number, end: number) {
 }
 
 export = async function generateFixture(opts?: Partial<Opts>) {
-  const outputDir = opts?.outputDir ?? path.join(process.cwd(), 'data');
-  const numMessages = Math.max(opts?.messages ?? 1e4, 1);
-  const numAuthors = Math.max(opts?.authors ?? 150, 1);
-  const seed = opts?.seed ?? generateRandomSeed();
-  const slim = opts?.slim ?? true;
-  const report = opts?.report ?? true;
+  const outputDir = opts?.outputDir ?? defaults.outputDir();
+  const numMessages = Math.max(opts?.messages ?? defaults.MESSAGES, 1);
+  const numAuthors = Math.max(opts?.authors ?? defaults.AUTHORS, 1);
+  const seed = opts?.seed ?? defaults.randomSeed();
+  const slim = opts?.slim ?? defaults.SLIM;
+  const report = opts?.report ?? defaults.REPORT;
   const latestmsg = (opts?.latestmsg ?? numMessages) - 1;
 
   const authorsKeys = generateAuthors(seed, numAuthors);

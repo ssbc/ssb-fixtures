@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const test = require('tape');
+const Ref = require('ssb-ref');
 const OffsetLog = require('flumelog-offset');
 const codec = require('flumecodec');
 const Flume = require('flumedb');
@@ -166,6 +167,29 @@ test('marks first and last msg as OLDESTMSG and LATESTMSG', (t) => {
         'LATESTMSG ',
         'last msg is prefixed with LATESTMSG',
       );
+
+      cleanup(() => {
+        t.end();
+      });
+    },
+  );
+});
+
+test('can generate about msgs', (t) => {
+  generateAndTest(
+    {
+      outputDir: 'ssb-fixtures-test-3',
+      seed: 'rosette',
+      messages: 5,
+      authors: 1,
+    },
+    (err, msgs, cleanup) => {
+      t.error(err, 'no error');
+      t.equals(msgs.length, 5, 'there are 5 msgs');
+
+      t.equals(msgs[3].value.content.type, 'about', '4th msg is an about');
+      t.equals(typeof msgs[3].value.content.image, 'object', '"image" object');
+      t.true(Ref.isBlob(msgs[3].value.content.image.link), 'link is blob');
 
       cleanup(() => {
         t.end();

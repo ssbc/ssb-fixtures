@@ -25,7 +25,6 @@ This **does not follow SemVer**. That's because we want to version the datasets 
 
 - Run tests in CI
 - Publish first fixture in GitHub releases, from CI hopefully
-- Generate about messages
 - Generate private messages
 - Have other accounts with their secret stored too, to recover private messages
 - Generate channel messages

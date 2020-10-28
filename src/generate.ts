@@ -2,6 +2,7 @@ import crypto = require('crypto');
 const ssbKeys = require('ssb-keys');
 import {LoremIpsum} from 'lorem-ipsum';
 import {
+  AboutContent,
   ContactContent,
   FeedId,
   Msg,
@@ -176,6 +177,61 @@ export function generateAuthors(seed: string, numAuthors: number) {
   });
 }
 
+function generateAboutImage(seed: string) {
+  const subtype = sampleCollection(seed, freq.ABOUT_IMAGE_TYPE_FREQUENCIES);
+  if (subtype === 'big_object') {
+    return {
+      link: generateBlobId(),
+      type: sampleCollection(seed, freq.BLOB_IMAGE_TYPE_FREQUENCIES),
+      size: Math.round(somewhatGaussian(seed) * 2e6),
+      width: Math.round(somewhatGaussian(seed) * 1600),
+      height: Math.round(somewhatGaussian(seed) * 1600),
+    };
+  }
+  if (subtype === 'small_object') {
+    return {
+      link: generateBlobId(),
+    };
+  }
+  if (subtype === 'string') {
+    return generateBlobId();
+  }
+}
+
+function generateAboutMsg(
+  seed: string,
+  author: Author,
+  authors: Array<Author>,
+) {
+  const about: FeedId =
+    random(seed) < freq.ABOUT_OTHER_FREQUENCY
+      ? uniformSample(seed, authors).id
+      : author.id;
+  const subtype = sampleCollection(seed, freq.ABOUT_TYPE_FREQUENCIES);
+  const hasName =
+    subtype === 'name' ||
+    subtype === 'name_and_description' ||
+    subtype === 'name_and_image' ||
+    subtype === 'name_and_image_and_description';
+  const hasImage =
+    subtype === 'image' ||
+    subtype === 'image_and_description' ||
+    subtype === 'name_and_image' ||
+    subtype === 'name_and_image_and_description';
+  const hasDescription =
+    subtype === 'description' ||
+    subtype === 'image_and_description' ||
+    subtype === 'name_and_description' ||
+    subtype === 'name_and_image_and_description';
+  const content: AboutContent = {type: 'about', about};
+  if (hasName) content.name = __lorem.generateWords(randomInt(seed, 1, 3));
+  if (hasImage) content.image = generateAboutImage(seed) as any;
+  if (hasDescription) {
+    content.description = __lorem.generateSentences(randomInt(seed, 1, 5));
+  }
+  return content;
+}
+
 export function generateMsg(
   seed: string,
   i: number,
@@ -206,6 +262,8 @@ export function generateMsg(
     return generateVoteMsg(seed, msgsByType);
   } else if (type === 'contact') {
     return generateContactMsg(seed, author, authors, follows, blocks);
+  } else if (type === 'about') {
+    return generateAboutMsg(seed, author, authors);
   } else if (type === 'post') {
     return generatePostMsg(seed, i, numMessages, msgsByType, authors);
   } else {

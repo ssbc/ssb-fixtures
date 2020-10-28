@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "bin": "bin.js",
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "compile": "tsc",
     "start": "npm run compile && node bin"
   },
@@ -30,5 +31,15 @@
     "ssb-typescript": "^2.1.0",
     "typescript": "^4.0.3",
     "yargs": "^16.1.0"
+  },
+  "resolutionsCOMMENT": "This is specifically for npm install usage",
+  "resolutions": {
+    "monotonic-timestamp": "staltz/mock-monotonic-timestamp"
+  },
+  "pnpmCOMMENT": "This is specifically for pnpm install usage",
+  "pnpm": {
+    "overrides": {
+      "monotonic-timestamp": "staltz/mock-monotonic-timestamp"
+    }
   }
 }

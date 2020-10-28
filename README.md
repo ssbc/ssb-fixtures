@@ -29,5 +29,4 @@ This **does not follow SemVer**. That's because we want to version the datasets 
 - Have other accounts with their secret stored too, to recover private messages
 - Generate channel messages
 - Automated tests
-- Generate the timestamps deterministically
 - Generate "updated" fixture to simulate a second resync

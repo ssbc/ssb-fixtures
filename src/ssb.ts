@@ -1,10 +1,9 @@
 const SecretStack = require('secret-stack');
 const makeConfig = require('ssb-config/inject');
-const ssbKeys = require('ssb-keys');
 import fs = require('fs');
 import path = require('path');
 
-export function makeSsbPeer(authorsKeys: Array<any>, outputDir: string): any {
+export function makeSSB(authorsKeys: Array<any>, outputDir: string): any {
   const hops0Keys = authorsKeys[0];
 
   const peer = SecretStack({appKey: require('ssb-caps').shs})

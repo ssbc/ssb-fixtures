@@ -1,7 +1,7 @@
 import path = require('path');
 import run = require('promisify-tuple');
 import {ContactContent, Msg} from 'ssb-typescript';
-import {makeSsbPeer} from './ssb';
+import {makeSSB} from './ssb';
 import {generateRandomSeed, generateAuthors, generateMsg} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
 import {paretoSample} from './sample';
@@ -26,11 +26,11 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const report = opts?.report ?? true;
 
   const authorsKeys = generateAuthors(seed, numAuthors);
-  const peer = makeSsbPeer(authorsKeys, outputDir);
+  const ssb = makeSSB(authorsKeys, outputDir);
 
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
-  const authors = authorsKeys.map((keys) => peer.createFeed(keys));
+  const authors = authorsKeys.map((keys) => ssb.createFeed(keys));
 
   const follows: Follows = new Map(authors.map((a) => [a.id, new Set()]));
   const blocks: Blocks = new Map(authors.map((a) => [a.id, new Set()]));
@@ -82,7 +82,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
 
   if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
 
-  await run<unknown>(peer.close)();
+  await run<unknown>(ssb.close)();
 
   if (slim) slimify(outputDir);
 };

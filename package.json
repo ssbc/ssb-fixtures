@@ -8,6 +8,7 @@
     "preinstall": "npx npm-force-resolutions",
     "compile": "tsc",
     "start": "npm run compile && node bin",
+    "pretest": "npm run compile",
     "test": "tape test/*"
   },
   "repository": {

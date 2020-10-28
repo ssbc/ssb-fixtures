@@ -140,7 +140,7 @@ function generateContactMsg(
   let contact: FeedId;
   do {
     contact = paretoSample(seed, authors).id;
-  } while (contact === author.id);
+  } while (contact === author.id && authors.length > 1);
 
   let subtype = sampleCollection(seed, freq.CONTACT_TYPE_FREQUENCIES);
   const authorFollows = follows.get(author.id)!;

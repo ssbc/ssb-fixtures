@@ -19,8 +19,8 @@
     "flumecodec": "^0.0.1",
     "flumedb": "^2.1.8",
     "flumelog-offset": "^3.4.4",
-    "pull-stream": "3.6.14",
     "monotonic-timestamp": "staltz/mock-monotonic-timestamp",
+    "pull-stream": "3.6.14",
     "ssb-ref": "2.14.2",
     "tape": "^5.0.1"
   },

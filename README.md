@@ -18,7 +18,7 @@ npx ssb-fixtures --messages=1000 --authors=100
 - Oldest msg is always `type: post` and contains the text "OLDESTMSG"
 - Most recent msg is always `type: post` and contains the text "LATESTMSG"
 - Can generate an "extended" fixture
-  - `npx ssb-fixtures --messages=1050 --authors=100 --latestmsg=1000` contains 50 more new messages more than `npx ssb-fixtures --messages=1000 --authors=100`
+  - `npx ssb-fixtures --seed=foo --messages=1050 --authors=100 --latestmsg=1000` contains 50 more new messages more than `npx ssb-fixtures --seed=foo --messages=1000 --authors=100`
 
 ## Versioning
 

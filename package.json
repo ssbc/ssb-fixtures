@@ -9,7 +9,7 @@
     "compile": "tsc",
     "start": "npm run compile && node bin",
     "pretest": "npm run compile",
-    "test": "tape test/*"
+    "test": "tape test/*.js"
   },
   "repository": {
     "url": "https://github.com/staltz/ssb-fixtures"

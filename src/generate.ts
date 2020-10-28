@@ -30,7 +30,9 @@ export function generateRandomSeed() {
 }
 
 function generateBlobId() {
-  return '&' + crypto.randomBytes(32).toString('base64') + '.sha256';
+  const blob = Buffer.alloc(32);
+  Buffer.from(__lorem.generateWords(9).replace(/\W/g, ''), 'utf-8').copy(blob);
+  return '&' + blob.toString('base64') + '.sha256';
 }
 
 function generateMentions(seed: string, authors: Array<Author>) {

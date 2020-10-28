@@ -7,13 +7,21 @@
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
     "compile": "tsc",
-    "start": "npm run compile && node bin"
+    "start": "npm run compile && node bin",
+    "test": "tape test/*"
   },
   "repository": {
     "url": "https://github.com/staltz/ssb-fixtures"
   },
   "author": "contact@staltz.com",
   "license": "MIT",
+  "devDependencies": {
+    "flumecodec": "^0.0.1",
+    "flumedb": "^2.1.8",
+    "flumelog-offset": "^3.4.4",
+    "pull-stream": "3.6.14",
+    "tape": "^5.0.1"
+  },
   "dependencies": {
     "@types/node": "^14.14.2",
     "implausible": "^3.0.4",

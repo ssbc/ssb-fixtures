@@ -7,6 +7,7 @@ import {
   FeedId,
   Msg,
   PostContent,
+  Privatable,
   VoteContent,
 } from 'ssb-typescript';
 import freq = require('./frequencies');
@@ -62,34 +63,59 @@ function generateMentions(seed: string, authors: Array<Author>) {
   });
 }
 
+function generateRecipients(
+  seed: string,
+  author: Author,
+  authors: Array<Author>,
+): Required<Privatable<{}>>['recps'] {
+  if (authors.length <= 1) return [author.id];
+  const quantity = randomInt(seed, 1, Math.min(authors.length - 1, 7));
+  // Always include author
+  const recps = [author.id];
+  // Sample other authors, but don't sample ones that are already recipient
+  while (recps.length < quantity) {
+    let other: FeedId;
+    do {
+      other = paretoSample(seed, authors).id;
+    } while (recps.some((r) => other === r));
+    recps.push(other);
+  }
+  return recps;
+}
+
 function generatePostMsg(
   seed: string,
   i: number,
   numMessages: number,
   msgsByType: MsgsByType,
   authors: Array<Author>,
+  type: 'private' | 'post' = 'post',
 ): PostContent {
   const textSize = sampleCollection(seed, freq.POST_SIZE_FREQUENCIES);
-  const text =
-    textSize === 'short'
-      ? __lorem.generateWords(randomInt(seed, 1, 5))
-      : textSize === 'medium'
-      ? __lorem.generateSentences(randomInt(seed, 1, 5))
-      : __lorem.generateParagraphs(randomInt(seed, 1, 5));
+  // Text
   const content: PostContent = {
     type: 'post',
-    text,
+    text:
+      textSize === 'short'
+        ? __lorem.generateWords(randomInt(seed, 1, 5))
+        : textSize === 'medium'
+        ? __lorem.generateSentences(randomInt(seed, 1, 5))
+        : __lorem.generateParagraphs(randomInt(seed, 1, 5)),
   };
+  // OLDESTMSG and LATESTMSG markers
   if (i === 0) {
     content.text = 'OLDESTMSG ' + content.text;
   }
   if (i === numMessages - 1) {
     content.text = 'LATESTMSG ' + content.text;
   }
+  // Channel
   if (random(seed) < freq.POST_CHANNEL_FREQUENCY) {
     content.channel = __lorem.generateWords(1);
   }
+  // Replies
   if (
+    type !== 'private' && // Private msg should not reply to `other` public msg
     i < numMessages - 1 && // Don't make the last msg a reply, it should be root
     (msgsByType.post?.length ?? 0) >= 2 && // Only reply if there are other post
     random(seed) < freq.POST_REPLY_FREQUENCY
@@ -112,10 +138,32 @@ function generatePostMsg(
       content.branch = other.key;
     }
   }
+  // Mentions
   if (random(seed) < freq.POST_MENTIONS_FREQUENCY) {
     content.mentions = generateMentions(seed, authors);
   }
   return content;
+}
+
+function generatePrivateMsg(
+  seed: string,
+  i: number,
+  numMessages: number,
+  msgsByType: MsgsByType,
+  author: Author,
+  authors: Array<Author>,
+): string {
+  const content: Privatable<PostContent> = generatePostMsg(
+    seed,
+    i,
+    numMessages,
+    msgsByType,
+    authors,
+    'private',
+  );
+  const recps = generateRecipients(seed, author, authors);
+  content.recps = recps;
+  return ssbKeys.box(content, content.recps);
 }
 
 function generateVoteMsg(seed: string, msgsByType: MsgsByType): VoteContent {
@@ -235,7 +283,7 @@ function generateAboutMsg(
 export function generateMsg(
   seed: string,
   i: number,
-  numMessages: number,
+  numMsgs: number,
   author: Author,
   msgsByType: MsgsByType,
   authors: Array<Author>,
@@ -255,18 +303,20 @@ export function generateMsg(
   });
 
   const type = sampleCollection(seed, freq.MSG_TYPE_FREQUENCIES);
-  // Oldest and latest msgs are always a post
-  if (i === 0 || i === numMessages - 1) {
-    return generatePostMsg(seed, i, numMessages, msgsByType, authors);
+  // Oldest and latest msgs are always a post authored by database owner
+  if (i === 0 || i === numMsgs - 1) {
+    return generatePostMsg(seed, i, numMsgs, msgsByType, authors);
   } else if (type === 'vote' && msgsByType.post?.length) {
     return generateVoteMsg(seed, msgsByType);
   } else if (type === 'contact') {
     return generateContactMsg(seed, author, authors, follows, blocks);
   } else if (type === 'about') {
     return generateAboutMsg(seed, author, authors);
+  } else if (type === 'private') {
+    return generatePrivateMsg(seed, i, numMsgs, msgsByType, author, authors);
   } else if (type === 'post') {
-    return generatePostMsg(seed, i, numMessages, msgsByType, authors);
+    return generatePostMsg(seed, i, numMsgs, msgsByType, authors);
   } else {
-    return generatePostMsg(seed, i, numMessages, msgsByType, authors);
+    return generatePostMsg(seed, i, numMsgs, msgsByType, authors);
   }
 }

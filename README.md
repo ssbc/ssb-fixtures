@@ -14,6 +14,7 @@ npx ssb-fixtures --messages=1000 --authors=100
 - Generates `about` msgs
 - Generates `vote` msgs
 - Generates `contact` msgs
+- Generates private `post` msgs
 - Oldest msg is always `type: post` and contains the text "OLDESTMSG"
 - Most recent msg is always `type: post` and contains the text "LATESTMSG"
 
@@ -29,7 +30,7 @@ This **does not follow SemVer**. That's because we want to version the datasets 
 
 - Run tests in CI
 - Publish first fixture in GitHub releases, from CI hopefully
-- Generate private messages
-- Have other accounts with their secret stored too, to recover private messages
+- Store other accounts with their secret too, to recover private messages
 - Generate channel messages
+- Private threads (currently all private messages are "root")
 - Generate "updated" fixture to simulate a second resync

@@ -9,7 +9,7 @@ export = {
     vote: 269447,
     post: 173264,
     contact: 167326,
-    // private: 93208,
+    private: 93208,
     // channel: 57087,
     about: 33476,
     // chess_move: 24199,

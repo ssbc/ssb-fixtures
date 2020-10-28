@@ -3,3 +3,4 @@ node_modules
 /data
 /lib
 pnpm-lock.yaml
+/gitignored

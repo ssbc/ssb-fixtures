@@ -80,13 +80,9 @@ export = async function generateFixture(opts?: Partial<Opts>) {
     }
   }
 
-  if (report) {
-    writeReportFile(msgs, msgsByType, authors, follows, outputDir);
-  }
+  if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
 
-  peer.close(() => {
-    if (slim) {
-      slimify(outputDir);
-    }
-  });
+  await run<unknown>(peer.close)();
+
+  if (slim) slimify(outputDir);
 };

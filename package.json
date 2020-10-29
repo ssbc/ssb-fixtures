@@ -3,10 +3,10 @@
   "version": "2.0.0",
   "description": "Generate a simulated .ssb folder",
   "main": "lib/index.js",
-  "bin": "bin.js",
+  "bin": "lib/bin.js",
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
     "compile": "tsc",
+    "postcompile": "mv lib/bin.js lib/_bin.js && noderify --filter=supports-color lib/_bin.js > lib/bin.js",
     "start": "npm run compile && node bin",
     "pretest": "npm run compile",
     "test": "tape test/*.js"
@@ -17,20 +17,17 @@
   "author": "contact@staltz.com",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^14.14.2",
     "flumecodec": "^0.0.1",
     "flumedb": "^2.1.8",
     "flumelog-offset": "^3.4.4",
-    "monotonic-timestamp": "staltz/mock-monotonic-timestamp",
-    "pull-stream": "3.6.14",
-    "ssb-ref": "2.14.2",
-    "tape": "^5.0.1"
-  },
-  "dependencies": {
-    "@types/node": "^14.14.2",
     "implausible": "3.0.4",
     "lorem-ipsum": "2.0.3",
     "mkdirp": "^1.0.4",
+    "monotonic-timestamp": "staltz/mock-monotonic-timestamp",
+    "noderify": "5.0.0",
     "promisify-tuple": "^1.0.1",
+    "pull-stream": "3.6.14",
     "rimraf": "^3.0.2",
     "secret-stack": "6.3.1",
     "ssb-caps": "1.1.0",
@@ -39,15 +36,12 @@
     "ssb-keys": "8.0.0",
     "ssb-logging": "1.0.0",
     "ssb-master": "1.0.3",
+    "ssb-ref": "2.14.2",
     "ssb-typescript": "^2.1.0",
+    "tape": "^5.0.1",
     "typescript": "^4.0.3",
     "yargs": "^16.1.0"
   },
-  "resolutionsCOMMENT": "This is specifically for npm install usage",
-  "resolutions": {
-    "monotonic-timestamp": "staltz/mock-monotonic-timestamp"
-  },
-  "pnpmCOMMENT": "This is specifically for pnpm install usage",
   "pnpm": {
     "overrides": {
       "monotonic-timestamp": "staltz/mock-monotonic-timestamp"

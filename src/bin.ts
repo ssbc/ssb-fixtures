@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const yargs = require('yargs/yargs');
-const defaults = require('./lib/defaults');
-const generate = require('./lib/index');
+import defaults = require('./defaults');
+import generate = require('./index');
 
 const argv = yargs(process.argv)
   .describe('seed', 'String for deterministic generation')

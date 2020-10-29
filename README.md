@@ -48,7 +48,6 @@ This **does not follow SemVer**. That's because we want to version the datasets 
 
 ## TODO
 
-- Fix `npx` usage
 - Store other accounts with their secret too, to recover private messages
 - Run tests in CI
 - Publish first fixture in GitHub releases, from CI hopefully

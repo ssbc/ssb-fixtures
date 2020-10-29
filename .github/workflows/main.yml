@@ -40,7 +40,7 @@ jobs:
   publish:
     name: Publish fixtures
     needs: [test]
-    if: ${{ startsWith(github.event.head_commit.message, 'release') }}
+    # if: ${{ startsWith(github.event.head_commit.message, 'release') }}
 
     strategy:
       matrix:
@@ -64,5 +64,17 @@ jobs:
       - name: pnpm install
         run: pnpm install
 
-      - name: TODO
-        run: echo "TODO"
+      - name: Build 'dinghy' fixture
+        run: node lib/bin.js --seed=dinghy --messages=10000 --authors=500
+
+      - name: Compress it
+        run: tar -czvf v1-dinghy-m10000-a500.tar.gz ./data
+
+      - name: Upload to GitHub releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'v1-dinghy-m10000-a500.tar.gz'
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          tag: '1.0.0'
+          token: ${{ secrets.GITHUB_TOKEN }}

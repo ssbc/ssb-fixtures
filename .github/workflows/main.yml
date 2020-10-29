@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Set up pnpm 5
+        uses: pnpm/action-setup@v1.2.0
+        with:
+          version: 5.10.x
+
+      - name: pnpm install
+        run: pnpm install
+
+      - name: Test
+        run: pnpm test
+
+  publish:
+    name: Publish fixtures
+    needs: [test]
+    if: ${{ startsWith(github.event.head_commit.message, 'release') }}
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Set up pnpm 5
+        uses: pnpm/action-setup@v1.2.0
+        with:
+          version: 5.10.x
+
+      - name: pnpm install
+        run: pnpm install
+
+      - name: TODO
+        run: echo "TODO"

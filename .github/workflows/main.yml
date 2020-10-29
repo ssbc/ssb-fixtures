@@ -78,16 +78,23 @@ jobs:
         run: |
           node lib/bin.js --seed=sloop --messages=100000 --authors=2000 --outputDir=sloop
 
+      - name: Build 'catamaran' fixture
+        run: |
+          node lib/bin.js --seed=catamaran --messages=1000000 --authors=8000 --outputDir=catamaran
+
       - name: Compress 'dinghy'
         run: cd ./dinghy && tar -zcvf ../v${{ env.MAJOR_VERSION }}-dinghy-m10000-a500.tar.gz . && cd ..
 
       - name: Compress 'sloop'
         run: cd ./sloop && tar -zcvf ../v${{ env.MAJOR_VERSION }}-sloop-m100000-a2000.tar.gz . && cd ..
 
+      - name: Compress 'catamaran'
+        run: cd ./catamaran && tar -zcvf ../v${{ env.MAJOR_VERSION }}-catamaran-m1000000-a8000.tar.gz . && cd ..
+
       - name: Upload to GitHub releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'v${{ env.MAJOR_VERSION }}-dinghy-m10000-a500.tar.gz,v${{ env.MAJOR_VERSION }}-sloop-m100000-a2000.tar.gz'
+          artifacts: 'v${{ env.MAJOR_VERSION }}-dinghy-m10000-a500.tar.gz,v${{ env.MAJOR_VERSION }}-sloop-m100000-a2000.tar.gz,v${{ env.MAJOR_VERSION }}-catamaran-m1000000-a8000.tar.gz'
           allowUpdates: true
           omitBodyDuringUpdate: true
           tag: ${{ env.FULL_VERSION }}

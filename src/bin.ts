@@ -15,8 +15,11 @@ const argv = yargs(process.argv)
   .describe('outputDir', 'Directory for the output fixture')
   .default('outputDir', defaults.outputDir, './data')
 
-  .describe('slim', 'Keep only essential flume files in the fixture')
-  .default('slim', defaults.SLIM)
+  .option('slim', {
+    default: defaults.SLIM,
+    type: 'boolean',
+    describe: 'Keep only essential flume files in the fixture',
+  })
 
   .describe('report', 'Create a report.md file in the fixture')
   .default('report', defaults.REPORT)

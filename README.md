@@ -48,7 +48,6 @@ This **does not follow SemVer**. That's because we want to version the datasets 
 
 ## TODO
 
-- Store other accounts with their secret too, to recover private messages
 - Run tests in CI
 - Publish first fixture in GitHub releases, from CI hopefully
 - Support `npm` and `npx` (it installs multiple versions of mock-monotonic-timestamp, messing up the mutable counter)

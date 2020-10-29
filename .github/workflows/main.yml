@@ -71,7 +71,7 @@ jobs:
         run: node lib/bin.js --seed=dinghy --messages=10000 --authors=500
 
       - name: Compress it
-        run: tar -czvf v1-dinghy-m10000-a500.tar.gz ./data
+        run: cd ./data && tar -czvf v1-dinghy-m10000-a500.tar.gz ./ && cd ..
 
       - name: Upload to GitHub releases
         uses: ncipollo/release-action@v1

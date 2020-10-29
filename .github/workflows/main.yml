@@ -64,6 +64,9 @@ jobs:
       - name: pnpm install
         run: pnpm install
 
+      - name: Compile
+        run: pnpm run compile
+
       - name: Build 'dinghy' fixture
         run: node lib/bin.js --seed=dinghy --messages=10000 --authors=500
 

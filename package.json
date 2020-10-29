@@ -6,7 +6,6 @@
   "bin": "lib/bin.js",
   "scripts": {
     "compile": "tsc",
-    "start": "npm run compile && node bin",
     "pretest": "npm run compile",
     "test": "tape test/*.js"
   },

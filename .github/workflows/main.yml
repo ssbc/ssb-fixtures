@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
   test:
     name: Test
@@ -76,16 +73,15 @@ jobs:
           node lib/bin.js --seed=sloop --messages=100000 --authors=2000 --outputDir=sloop
 
       - name: Compress 'dinghy'
-        run: cd ./dinghy && tar -zcvf ../v1-dinghy-m10000-a500.tar.gz . && cd ..
+        run: cd ./dinghy && tar -zcvf ../v2-dinghy-m10000-a500.tar.gz . && cd ..
 
       - name: Compress 'sloop'
-        run: cd ./sloop && tar -zcvf ../v1-sloop-m100000-a2000.tar.gz . && cd ..
+        run: cd ./sloop && tar -zcvf ../v2-sloop-m100000-a2000.tar.gz . && cd ..
 
       - name: Upload to GitHub releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'v1-dinghy-m10000-a500.tar.gz,v1-sloop-m100000-a2000.tar.gz'
+          artifacts: 'v2-dinghy-m10000-a500.tar.gz,v2-sloop-m100000-a2000.tar.gz'
           allowUpdates: true
           omitBodyDuringUpdate: true
-          tag: '1.0.0'
           token: ${{ secrets.GITHUB_TOKEN }}

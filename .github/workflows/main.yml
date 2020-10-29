@@ -64,6 +64,12 @@ jobs:
       - name: Compile
         run: pnpm run compile
 
+      - name: Detect version
+        run: echo ::set-env name=FULL_VERSION::$(node .github/get-pkg-version.js)
+
+      - name: Detect major version
+        run: echo ::set-env name=MAJOR_VERSION::$(node .github/get-pkg-major-version.js)
+
       - name: Build 'dinghy' fixture
         run: |
           node lib/bin.js --seed=dinghy --messages=10000 --authors=500 --outputDir=dinghy
@@ -73,15 +79,16 @@ jobs:
           node lib/bin.js --seed=sloop --messages=100000 --authors=2000 --outputDir=sloop
 
       - name: Compress 'dinghy'
-        run: cd ./dinghy && tar -zcvf ../v2-dinghy-m10000-a500.tar.gz . && cd ..
+        run: cd ./dinghy && tar -zcvf ../v${{ env.MAJOR_VERSION }}-dinghy-m10000-a500.tar.gz . && cd ..
 
       - name: Compress 'sloop'
-        run: cd ./sloop && tar -zcvf ../v2-sloop-m100000-a2000.tar.gz . && cd ..
+        run: cd ./sloop && tar -zcvf ../v${{ env.MAJOR_VERSION }}-sloop-m100000-a2000.tar.gz . && cd ..
 
       - name: Upload to GitHub releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'v2-dinghy-m10000-a500.tar.gz,v2-sloop-m100000-a2000.tar.gz'
+          artifacts: 'v${{ env.MAJOR_VERSION }}-dinghy-m10000-a500.tar.gz,v${{ env.MAJOR_VERSION }}-sloop-m100000-a2000.tar.gz'
           allowUpdates: true
           omitBodyDuringUpdate: true
+          tag: ${{ env.FULL_VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -37,7 +37,7 @@ jobs:
   publish:
     name: Publish fixtures
     needs: [test]
-    # if: ${{ startsWith(github.event.head_commit.message, 'release') }}
+    if: ${{ startsWith(github.event.head_commit.message, 'release') }}
 
     strategy:
       matrix:

@@ -43,6 +43,25 @@ export function paretoSample<T>(
   return arr[i];
 }
 
+export function paretoSampleMany<T>(
+  seed: string,
+  pool: Array<T>,
+  targetSize: number,
+  target: Array<T> = [],
+  shapeParam: number = 2,
+  min: number = 0,
+) {
+  const quantity = Math.min(targetSize, pool.length);
+  while (target.length < quantity) {
+    let other: T;
+    do {
+      other = paretoSample(seed, pool, shapeParam, min);
+    } while (target.some((x) => other === x));
+    target.push(other);
+  }
+  return target;
+}
+
 export function uniformSample<T>(seed: string, arr: Array<T>): T {
   const i = Math.floor(random(seed) * arr.length);
   return arr[i];

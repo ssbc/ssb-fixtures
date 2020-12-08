@@ -15,6 +15,7 @@ import {
 import freq = require('./frequencies');
 import {
   paretoSample,
+  paretoSampleMany,
   uniformSample,
   randomInt,
   sampleCollection,
@@ -70,19 +71,12 @@ function generateRecipients(
   author: Author,
   authors: Array<Author>,
 ): Required<Privatable<{}>>['recps'] {
-  if (authors.length <= 1) return [author.id];
-  const quantity = randomInt(seed, 1, Math.min(authors.length - 1, 7));
-  // Always include author
-  const recps = [author.id];
-  // Sample other authors, but don't sample ones that are already recipient
-  while (recps.length < quantity) {
-    let other: FeedId;
-    do {
-      other = paretoSample(seed, authors).id;
-    } while (recps.some((r) => other === r));
-    recps.push(other);
-  }
-  return recps;
+  return paretoSampleMany(
+    seed,
+    authors.map((a) => a.id),
+    randomInt(seed, 1, 7),
+    [author.id], // Always include author
+  );
 }
 
 function generatePostContent(
@@ -179,20 +173,24 @@ async function generatePrivate(
       seed,
       Array.from(tribesByAuthors.get(author.id)?.keys() ?? []),
     );
-    let inviteeId: FeedId;
-    do {
-      inviteeId = paretoSample(seed, authors).id;
-    } while (inviteeId === author.id);
+    const inviteeIds: Array<FeedId> = paretoSampleMany(
+      seed,
+      authors.map((a) => a.id),
+      randomInt(seed, 1, 15),
+      [author.id], // add author.id to force others to be different
+    );
+    inviteeIds.shift(); // remove author.id
     const text = __lorem.generateWords(randomInt(seed, 1, 9));
-    const msg = await pify(ssb.tribes.invite)(groupId, [inviteeId], {text});
-    const groupIds = tribesByAuthors.get(inviteeId) ?? new Set();
-    groupIds.add(groupId);
-    tribesByAuthors.set(inviteeId, groupIds);
+    const msg = await pify(ssb.tribes.invite)(groupId, inviteeIds, {text});
+    for (const inviteeId of inviteeIds) {
+      const groupIds = tribesByAuthors.get(inviteeId) ?? new Set();
+      groupIds.add(groupId);
+      tribesByAuthors.set(inviteeId, groupIds);
+    }
     // console.log(
-    //   `${author.id.slice(0, 6)} invited ${inviteeId.slice(
-    //     0,
-    //     6,
-    //   )} to tribe ${groupId.slice(0, 6)}`,
+    //   `${author.id.slice(0, 6)} invited ${inviteeIds
+    //     .map((id) => id.slice(0, 6))
+    //     .join(',')} to tribe ${groupId.slice(0, 6)}`,
     // );
     return msg as Msg;
   } else if (type === 'tribe_message' && tribesByAuthors.has(author.id)) {
@@ -208,8 +206,7 @@ async function generatePrivate(
       seed,
       Array.from(tribesByAuthors.get(author.id)?.keys() ?? []),
     );
-    const recps = [groupId, author.id];
-    content.recps = recps;
+    content.recps = [groupId];
     // console.log(
     //   `${author.id.slice(0, 6)} posted to tribe ${groupId.slice(0, 6)}`,
     // );

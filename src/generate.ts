@@ -1,3 +1,4 @@
+import pify = require('promisify-4loc');
 import crypto = require('crypto');
 const ssbKeys = require('ssb-keys');
 import {LoremIpsum} from 'lorem-ipsum';
@@ -20,7 +21,7 @@ import {
   somewhatGaussian,
   random,
 } from './sample';
-import {Author, Blocks, Follows, MsgsByType} from './types';
+import {Author, Blocks, Follows, MsgsByType, TribesByAuthor} from './types';
 
 let __lorem: any;
 
@@ -149,26 +150,83 @@ function generatePostContent(
   return content;
 }
 
-function generatePrivate(
+async function generatePrivate(
   ssb: any,
   seed: string,
   i: number,
   latestmsg: number,
   msgsByType: MsgsByType,
+  tribesByAuthors: TribesByAuthor,
   author: Author,
   authors: Array<Author>,
-): string {
-  const content: Privatable<PostContent> = generatePostContent(
-    seed,
-    i,
-    latestmsg,
-    msgsByType,
-    authors,
-    'private',
-  );
-  const recps = generateRecipients(seed, author, authors);
-  content.recps = recps;
-  return ssbKeys.box(content, content.recps);
+): Promise<Msg | Privatable<Content>> {
+  const type = sampleCollection(seed, freq.PRIVATE_FREQUENCIES);
+  if (type === 'tribe_creation' || tribesByAuthors.size === 0) {
+    const {groupId, groupInitMsg} = await pify<any>(ssb.tribes.create)(null);
+    const groupIds = tribesByAuthors.get(author.id) ?? new Set();
+    groupIds.add(groupId);
+    tribesByAuthors.set(author.id, groupIds);
+    // console.log(
+    //   `${author.id.slice(0, 6)} created tribe ${groupId.slice(0, 6)}`,
+    // );
+    return groupInitMsg as Msg;
+  } else if (
+    type === 'tribe_invitation' &&
+    tribesByAuthors.has(author.id) &&
+    authors.length > 1
+  ) {
+    const groupId = uniformSample(
+      seed,
+      Array.from(tribesByAuthors.get(author.id)?.keys() ?? []),
+    );
+    let inviteeId: FeedId;
+    do {
+      inviteeId = paretoSample(seed, authors).id;
+    } while (inviteeId === author.id);
+    const text = __lorem.generateWords(randomInt(seed, 1, 9));
+    const msg = await pify(ssb.tribes.invite)(groupId, [inviteeId], {text});
+    const groupIds = tribesByAuthors.get(inviteeId) ?? new Set();
+    groupIds.add(groupId);
+    tribesByAuthors.set(inviteeId, groupIds);
+    // console.log(
+    //   `${author.id.slice(0, 6)} invited ${inviteeId.slice(
+    //     0,
+    //     6,
+    //   )} to tribe ${groupId.slice(0, 6)}`,
+    // );
+    return msg as Msg;
+  } else if (type === 'tribe_message' && tribesByAuthors.has(author.id)) {
+    const content: Privatable<PostContent> = generatePostContent(
+      seed,
+      i,
+      latestmsg,
+      msgsByType,
+      authors,
+      'private',
+    );
+    const groupId = uniformSample(
+      seed,
+      Array.from(tribesByAuthors.get(author.id)?.keys() ?? []),
+    );
+    const recps = [groupId, author.id];
+    content.recps = recps;
+    // console.log(
+    //   `${author.id.slice(0, 6)} posted to tribe ${groupId.slice(0, 6)}`,
+    // );
+    return content;
+  } else {
+    const content: Privatable<PostContent> = generatePostContent(
+      seed,
+      i,
+      latestmsg,
+      msgsByType,
+      authors,
+      'private',
+    );
+    const recps = generateRecipients(seed, author, authors);
+    content.recps = recps;
+    return content;
+  }
 }
 
 function generateVoteContent(
@@ -288,7 +346,7 @@ function generateAboutContent(
   return content;
 }
 
-export async function generateMsgContent(
+export async function generateMsgOrContent(
   ssb: any,
   seed: string,
   i: number,
@@ -296,9 +354,10 @@ export async function generateMsgContent(
   author: Author,
   msgsByType: MsgsByType,
   authors: Array<Author>,
+  tribes: TribesByAuthor,
   follows: Follows,
   blocks: Blocks,
-): Promise<Content | string> {
+): Promise<Msg | Content> {
   __lorem = new LoremIpsum({
     random: random,
     sentencesPerParagraph: {
@@ -323,7 +382,7 @@ export async function generateMsgContent(
     return generateAboutContent(seed, author, authors);
   } else if (type === 'private') {
     const [a, as] = [author, authors]; // sorry Prettier, i want a one-liner
-    return generatePrivate(ssb, seed, i, latestmsg, msgsByType, a, as);
+    return generatePrivate(ssb, seed, i, latestmsg, msgsByType, tribes, a, as);
   } else if (type === 'post') {
     return generatePostContent(seed, i, latestmsg, msgsByType, authors);
   } else {

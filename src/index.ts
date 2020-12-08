@@ -1,8 +1,8 @@
 import pify = require('promisify-4loc');
 import {ContactContent, Msg} from 'ssb-typescript';
 import {makeSSB} from './ssb';
-import {generateAuthors, generateMsgContent} from './generate';
-import {Opts, MsgsByType, Follows, Blocks} from './types';
+import {generateAuthors, generateMsgOrContent} from './generate';
+import {Opts, MsgsByType, Follows, Blocks, TribesByAuthor} from './types';
 import {paretoSample} from './sample';
 import slimify from './slimify';
 import writeReportFile from './report';
@@ -33,6 +33,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
   const authors = authorsKeys.map((keys) => ssb.createFeed(keys));
+  const tribesByAuthor: TribesByAuthor = new Map();
 
   const follows: Follows = new Map(authors.map((a) => [a.id, new Set()]));
   const blocks: Blocks = new Map(authors.map((a) => [a.id, new Set()]));
@@ -55,7 +56,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
     let author = paretoSample(seed, authors);
     // OLDESTMSG and LATESTMSG are always authored by database owner
     if (i === 0 || i === latestmsg) author = authors[0];
-    const content = await generateMsgContent(
+    const msgOrContent = await generateMsgOrContent(
       ssb,
       seed,
       i,
@@ -63,10 +64,15 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       author,
       msgsByType,
       authors,
+      tribesByAuthor,
       follows,
       blocks,
     );
-    const posted: Msg = await pify<any>(author.add)(content);
+    const maybeMsg = msgOrContent as Partial<Msg>;
+    const posted: Msg =
+      maybeMsg?.key && maybeMsg?.timestamp && maybeMsg?.value
+        ? maybeMsg!
+        : await pify<any>(author.add)(msgOrContent);
 
     if (posted?.value.content) {
       msgs.push(posted);

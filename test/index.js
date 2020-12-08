@@ -138,10 +138,29 @@ test('can generate about msgs', (t) => {
   );
 });
 
-test('latestmsg and same seed can continue generating', (t) => {
+test('can generate tribes', (t) => {
   generateAndTest(
     {
       outputDir: 'ssb-fixtures-test-4',
+      seed: 'dog8',
+      messages: 5,
+      authors: 3,
+    },
+    (err, msgs, cleanup) => {
+      t.error(err, 'no error');
+      t.equals(typeof msgs[3].value.content, 'string', '4th msg is encrypted');
+      t.true(msgs[3].value.content.endsWith('.box2'), 'encrypted with box2');
+      cleanup(() => {
+        t.end();
+      });
+    },
+  );
+});
+
+test('latestmsg and same seed can continue generating', (t) => {
+  generateAndTest(
+    {
+      outputDir: 'ssb-fixtures-test-5',
       seed: 'deterministic',
       messages: 5,
       authors: 2,

@@ -10,6 +10,10 @@ export function makeSSB(authorsKeys: Array<any>, outputDir: string): any {
     .use(require('ssb-master'))
     .use(require('ssb-logging'))
     .use(require('ssb-db'))
+    .use(require('ssb-backlinks'))
+    .use(require('ssb-query'))
+    .use(require('ssb-tribes'))
+    .use(require('ssb-private1'))
     .call(
       null,
       makeConfig('ssb', {

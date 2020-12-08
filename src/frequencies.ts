@@ -51,6 +51,20 @@ export = {
   POST_MENTIONS_FREQUENCY: 0.6,
 
   /**
+   * Distribution of "private threads" versus "private groups (tribes)".
+   * Not based on real world data because we (as of 2020-12) don't have
+   * tribes deployed in production.
+   *
+   * Normalized.
+   */
+  PRIVATE_FREQUENCIES: {
+    direct_message: 0.7,
+    tribe_creation: 0.05,
+    tribe_invitation: 0.1,
+    tribe_message: 0.15,
+  },
+
+  /**
    * Distribution of types of mentions in msgs of type 'post'.
    * Based on staltz's intuition.
    * FIXME: base this on analysis of real world data

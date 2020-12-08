@@ -22,12 +22,16 @@
     "promisify-4loc": "1.0.0",
     "rimraf": "^3.0.2",
     "secret-stack": "6.3.1",
+    "ssb-backlinks": "2.1.1",
     "ssb-caps": "1.1.0",
     "ssb-config": "3.4.5",
     "ssb-db": "20.3.0",
     "ssb-keys": "8.0.0",
     "ssb-logging": "1.0.0",
     "ssb-master": "1.0.3",
+    "ssb-private1": "1.0.1",
+    "ssb-query": "2.4.5",
+    "ssb-tribes": "0.4.1",
     "yargs": "^16.1.0"
   },
   "devDependencies": {

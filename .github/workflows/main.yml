@@ -65,10 +65,10 @@ jobs:
         run: pnpm run compile
 
       - name: Detect version
-        run: echo ::set-env name=FULL_VERSION::$(node .github/get-pkg-version.js)
+        run: echo "FULL_VERSION=$(node .github/get-pkg-version.js)" >> $GITHUB_ENV
 
       - name: Detect major version
-        run: echo ::set-env name=MAJOR_VERSION::$(node .github/get-pkg-major-version.js)
+        run: echo "MAJOR_VERSION=$(node .github/get-pkg-major-version.js)" >> $GITHUB_ENV
 
       - name: Build 'dinghy' fixture
         run: |

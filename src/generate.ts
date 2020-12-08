@@ -158,7 +158,7 @@ function generatePrivate(
   author: Author,
   authors: Array<Author>,
 ): string {
-  const content: Privatable<PostContent> = generatePostMsg(
+  const content: Privatable<PostContent> = generatePostContent(
     seed,
     i,
     latestmsg,
@@ -298,7 +298,7 @@ export async function generateMsgContent(
   authors: Array<Author>,
   follows: Follows,
   blocks: Blocks,
-) {
+): Promise<Content | string> {
   __lorem = new LoremIpsum({
     random: random,
     sentencesPerParagraph: {

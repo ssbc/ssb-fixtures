@@ -4,6 +4,7 @@ import {LoremIpsum} from 'lorem-ipsum';
 import {
   AboutContent,
   ContactContent,
+  Content,
   FeedId,
   Msg,
   PostContent,
@@ -83,7 +84,7 @@ function generateRecipients(
   return recps;
 }
 
-function generatePostMsg(
+function generatePostContent(
   seed: string,
   i: number,
   latestmsg: number,
@@ -121,9 +122,12 @@ function generatePostMsg(
     random(seed) < freq.POST_REPLY_FREQUENCY
   ) {
     const min = 1; // avoid 0, to never reply to the OLDESTMSG
-    const other = paretoSample(seed, msgsByType.post!, 1.6, min) as Msg<
-      PostContent
-    >;
+    const other = paretoSample(
+      seed,
+      msgsByType.post!,
+      1.6,
+      min,
+    ) as Msg<PostContent>;
     if (other.value.content?.root) {
       if (random(seed) < freq.POST_REPLY_FORK_FREQUENCY) {
         content.root = other.key;
@@ -145,7 +149,8 @@ function generatePostMsg(
   return content;
 }
 
-function generatePrivateMsg(
+function generatePrivate(
+  ssb: any,
   seed: string,
   i: number,
   latestmsg: number,
@@ -166,7 +171,10 @@ function generatePrivateMsg(
   return ssbKeys.box(content, content.recps);
 }
 
-function generateVoteMsg(seed: string, msgsByType: MsgsByType): VoteContent {
+function generateVoteContent(
+  seed: string,
+  msgsByType: MsgsByType,
+): VoteContent {
   const other: Msg = paretoSample(seed, msgsByType.post!);
   return {
     type: 'vote',
@@ -178,7 +186,7 @@ function generateVoteMsg(seed: string, msgsByType: MsgsByType): VoteContent {
   };
 }
 
-function generateContactMsg(
+function generateContactContent(
   seed: string,
   author: Author,
   authors: Array<Author>,
@@ -246,7 +254,7 @@ function generateAboutImage(seed: string) {
   }
 }
 
-function generateAboutMsg(
+function generateAboutContent(
   seed: string,
   author: Author,
   authors: Array<Author>,
@@ -280,7 +288,8 @@ function generateAboutMsg(
   return content;
 }
 
-export function generateMsg(
+export async function generateMsgContent(
+  ssb: any,
   seed: string,
   i: number,
   latestmsg: number,
@@ -305,19 +314,19 @@ export function generateMsg(
   const type = sampleCollection(seed, freq.MSG_TYPE_FREQUENCIES);
   // Oldest and latest msgs are always a post authored by database owner
   if (i === 0 || i === latestmsg) {
-    return generatePostMsg(seed, i, latestmsg, msgsByType, authors);
+    return generatePostContent(seed, i, latestmsg, msgsByType, authors);
   } else if (type === 'vote' && msgsByType.post?.length) {
-    return generateVoteMsg(seed, msgsByType);
+    return generateVoteContent(seed, msgsByType);
   } else if (type === 'contact') {
-    return generateContactMsg(seed, author, authors, follows, blocks);
+    return generateContactContent(seed, author, authors, follows, blocks);
   } else if (type === 'about') {
-    return generateAboutMsg(seed, author, authors);
+    return generateAboutContent(seed, author, authors);
   } else if (type === 'private') {
     const [a, as] = [author, authors]; // sorry Prettier, i want a one-liner
-    return generatePrivateMsg(seed, i, latestmsg, msgsByType, a, as);
+    return generatePrivate(ssb, seed, i, latestmsg, msgsByType, a, as);
   } else if (type === 'post') {
-    return generatePostMsg(seed, i, latestmsg, msgsByType, authors);
+    return generatePostContent(seed, i, latestmsg, msgsByType, authors);
   } else {
-    return generatePostMsg(seed, i, latestmsg, msgsByType, authors);
+    return generatePostContent(seed, i, latestmsg, msgsByType, authors);
   }
 }

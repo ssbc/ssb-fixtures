@@ -1,7 +1,7 @@
-import run = require('promisify-tuple');
+import pify = require('promisify-4loc');
 import {ContactContent, Msg} from 'ssb-typescript';
 import {makeSSB} from './ssb';
-import {generateAuthors, generateMsg} from './generate';
+import {generateAuthors, generateMsgContent} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
 import {paretoSample} from './sample';
 import slimify from './slimify';
@@ -55,23 +55,20 @@ export = async function generateFixture(opts?: Partial<Opts>) {
     let author = paretoSample(seed, authors);
     // OLDESTMSG and LATESTMSG are always authored by database owner
     if (i === 0 || i === latestmsg) author = authors[0];
-    var [err, posted]: [any, Msg?] = await run<any>(author.add)(
-      generateMsg(
-        seed,
-        i,
-        latestmsg,
-        author,
-        msgsByType,
-        authors,
-        follows,
-        blocks,
-      ),
+    const content = await generateMsgContent(
+      ssb,
+      seed,
+      i,
+      latestmsg,
+      author,
+      msgsByType,
+      authors,
+      follows,
+      blocks,
     );
+    const posted: Msg = await pify<any>(author.add)(content);
 
-    if (err) {
-      console.error(err);
-      process.exit(1);
-    } else if (posted?.value.content) {
+    if (posted?.value.content) {
       msgs.push(posted);
       if (typeof posted.value.content === 'string') {
         msgsByType['private'] ??= [];
@@ -91,7 +88,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
 
   if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
 
-  await run<unknown>(ssb.close)();
+  await pify<unknown>(ssb.close)();
 
   if (slim) slimify(outputDir);
 };

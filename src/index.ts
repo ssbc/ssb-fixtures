@@ -73,10 +73,15 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       process.exit(1);
     } else if (posted?.value.content) {
       msgs.push(posted);
-      msgsByType[posted.value.content.type!] ??= [];
-      msgsByType[posted.value.content.type!]!.push(posted);
-      if (posted.value.content.type === 'contact') {
-        updateFollowsAndBlocks(posted as Msg<ContactContent>);
+      if (typeof posted.value.content === 'string') {
+        msgsByType['private'] ??= [];
+        msgsByType['private']!.push(posted);
+      } else {
+        msgsByType[posted.value.content.type!] ??= [];
+        msgsByType[posted.value.content.type!]!.push(posted);
+        if (posted.value.content.type === 'contact') {
+          updateFollowsAndBlocks(posted as Msg<ContactContent>);
+        }
       }
       if (verbose) {
         console.log(`${JSON.stringify(posted, null, 2)}\n`);

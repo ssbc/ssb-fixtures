@@ -176,7 +176,7 @@ async function generatePrivate(
     const inviteeIds: Array<FeedId> = paretoSampleMany(
       seed,
       authors.map((a) => a.id),
-      randomInt(seed, 1, 15),
+      randomInt(seed, 2, 15),
       [author.id], // add author.id to force others to be different
     );
     inviteeIds.shift(); // remove author.id

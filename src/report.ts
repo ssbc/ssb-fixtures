@@ -1,11 +1,11 @@
 import fs = require('fs');
 import path = require('path');
 import {FeedId, Msg} from 'ssb-typescript';
-import {Author, Blocks, Follows, MsgsByType} from './types';
+import {Peer, Blocks, Follows, MsgsByType} from './types';
 
 function calculateMsgsByHops(
   msgs: Array<Msg>,
-  authors: Array<Author>,
+  authors: Array<Peer>,
   follows: Follows,
 ) {
   const self = authors[0];
@@ -49,7 +49,7 @@ function calculateMsgsByHops(
 function* produceReport(
   msgs: Array<Msg>,
   msgsByType: MsgsByType,
-  authors: Array<Author>,
+  authors: Array<Peer>,
   follows: Follows,
 ) {
   const self = authors[0];
@@ -81,7 +81,7 @@ function* produceReport(
 export default function writeReportFile(
   msgs: Array<Msg>,
   msgsByType: MsgsByType,
-  authors: Array<Author>,
+  authors: Array<Peer>,
   follows: Follows,
   outputDir: string,
 ) {

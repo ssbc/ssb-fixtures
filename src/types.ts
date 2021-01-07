@@ -18,8 +18,12 @@ export type MsgType = keyof typeof freq.MSG_TYPE_FREQUENCIES;
 
 export type MsgsByType = Partial<Record<MsgType, Array<Msg>>>;
 
-export type Author = {
-  add: CallableFunction;
+export type Peer = {
+  publish: (x: any, cb: (err: any, val: any) => void) => void;
+  close: (cb?: (err: any, val: any) => void) => void;
+  tribes: {
+    [k: string]: any;
+  };
   id: FeedId;
 };
 

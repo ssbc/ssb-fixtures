@@ -22,7 +22,7 @@ import {
   somewhatGaussian,
   random,
 } from './sample';
-import {Author, Blocks, Follows, MsgsByType, TribesByAuthor} from './types';
+import {Peer, Blocks, Follows, MsgsByType, TribesByAuthor} from './types';
 
 let __lorem: any;
 
@@ -40,13 +40,13 @@ function generateBlobId() {
   return '&' + blob.toString('base64') + '.sha256';
 }
 
-function generateMentions(seed: string, authors: Array<Author>) {
+function generateMentions(seed: string, peers: Array<Peer>) {
   return Array.from({length: randomInt(seed, 1, 4)}, () => {
     const mentionType = sampleCollection(seed, freq.MENTION_LINK_FREQUENCIES);
     if (mentionType === 'author') {
-      const author = paretoSample(seed, authors);
+      const peer = paretoSample(seed, peers);
       return {
-        link: author.id,
+        link: peer.id,
         name: __lorem.generateWords(randomInt(seed, 1, 3)),
       };
     } else if (mentionType === 'blob') {
@@ -68,14 +68,14 @@ function generateMentions(seed: string, authors: Array<Author>) {
 
 function generateRecipients(
   seed: string,
-  author: Author,
-  authors: Array<Author>,
+  peer: Peer,
+  peers: Array<Peer>,
 ): Required<Privatable<{}>>['recps'] {
   return paretoSampleMany(
     seed,
-    authors.map((a) => a.id),
+    peers.map((a) => a.id),
     randomInt(seed, 1, 7),
-    [author.id], // Always include author
+    [peer.id], // Always include author
   );
 }
 
@@ -84,7 +84,7 @@ function generatePostContent(
   i: number,
   latestmsg: number,
   msgsByType: MsgsByType,
-  authors: Array<Author>,
+  peers: Array<Peer>,
   type: 'private' | 'post' = 'post',
 ): PostContent {
   const textSize = sampleCollection(seed, freq.POST_SIZE_FREQUENCIES);
@@ -139,76 +139,73 @@ function generatePostContent(
   }
   // Mentions
   if (random(seed) < freq.POST_MENTIONS_FREQUENCY) {
-    content.mentions = generateMentions(seed, authors);
+    content.mentions = generateMentions(seed, peers);
   }
   return content;
 }
 
 async function generatePrivate(
-  ssb: any,
   seed: string,
   i: number,
   latestmsg: number,
   msgsByType: MsgsByType,
   tribesByAuthors: TribesByAuthor,
-  author: Author,
-  authors: Array<Author>,
+  peer: Peer,
+  peers: Array<Peer>,
 ): Promise<Msg | Privatable<Content>> {
   const type = sampleCollection(seed, freq.PRIVATE_FREQUENCIES);
   if (type === 'tribe_creation' || tribesByAuthors.size === 0) {
-    const {groupId, groupInitMsg} = await pify<any>(ssb.tribes.create)(null);
-    const groupIds = tribesByAuthors.get(author.id) ?? new Set();
+    const {groupId, groupInitMsg} = await pify<any>(peer.tribes.create)(null);
+    const groupIds = tribesByAuthors.get(peer.id) ?? new Set();
     groupIds.add(groupId);
-    tribesByAuthors.set(author.id, groupIds);
-    // console.log(
-    //   `${author.id.slice(0, 6)} created tribe ${groupId.slice(0, 6)}`,
-    // );
+    tribesByAuthors.set(peer.id, groupIds);
+    // console.log(`${peer.id.slice(0, 6)} created tribe ${groupId.slice(0, 6)}`);
     return groupInitMsg as Msg;
   } else if (
     type === 'tribe_invitation' &&
-    tribesByAuthors.has(author.id) &&
-    authors.length > 1
+    tribesByAuthors.has(peer.id) &&
+    peers.length > 1
   ) {
     const groupId = uniformSample(
       seed,
-      Array.from(tribesByAuthors.get(author.id)?.keys() ?? []),
+      Array.from(tribesByAuthors.get(peer.id)?.keys() ?? []),
     );
     const inviteeIds: Array<FeedId> = paretoSampleMany(
       seed,
-      authors.map((a) => a.id),
+      peers.map((a) => a.id),
       randomInt(seed, 2, 15),
-      [author.id], // add author.id to force others to be different
+      [peer.id], // add peer.id to force others to be different
     );
-    inviteeIds.shift(); // remove author.id
+    inviteeIds.shift(); // remove peer.id
     const text = __lorem.generateWords(randomInt(seed, 1, 9));
-    const msg = await pify(ssb.tribes.invite)(groupId, inviteeIds, {text});
+    const msg = await pify(peer.tribes.invite)(groupId, inviteeIds, {text});
     for (const inviteeId of inviteeIds) {
       const groupIds = tribesByAuthors.get(inviteeId) ?? new Set();
       groupIds.add(groupId);
       tribesByAuthors.set(inviteeId, groupIds);
     }
     // console.log(
-    //   `${author.id.slice(0, 6)} invited ${inviteeIds
+    //   `${peer.id.slice(0, 6)} invited ${inviteeIds
     //     .map((id) => id.slice(0, 6))
     //     .join(',')} to tribe ${groupId.slice(0, 6)}`,
     // );
     return msg as Msg;
-  } else if (type === 'tribe_message' && tribesByAuthors.has(author.id)) {
+  } else if (type === 'tribe_message' && tribesByAuthors.has(peer.id)) {
     const content: Privatable<PostContent> = generatePostContent(
       seed,
       i,
       latestmsg,
       msgsByType,
-      authors,
+      peers,
       'private',
     );
     const groupId = uniformSample(
       seed,
-      Array.from(tribesByAuthors.get(author.id)?.keys() ?? []),
+      Array.from(tribesByAuthors.get(peer.id)?.keys() ?? []),
     );
     content.recps = [groupId];
     // console.log(
-    //   `${author.id.slice(0, 6)} posted to tribe ${groupId.slice(0, 6)}`,
+    //   `${peer.id.slice(0, 6)} posted to tribe ${groupId.slice(0, 6)}`,
     // );
     return content;
   } else {
@@ -217,10 +214,10 @@ async function generatePrivate(
       i,
       latestmsg,
       msgsByType,
-      authors,
+      peers,
       'private',
     );
-    const recps = generateRecipients(seed, author, authors);
+    const recps = generateRecipients(seed, peer, peers);
     content.recps = recps;
     return content;
   }
@@ -243,30 +240,30 @@ function generateVoteContent(
 
 function generateContactContent(
   seed: string,
-  author: Author,
-  authors: Array<Author>,
+  peer: Peer,
+  peers: Array<Peer>,
   follows: Follows,
   blocks: Blocks,
 ): ContactContent {
-  // Sample other authors, but don't sample ourself
+  // Sample other peers, but don't sample ourself
   let contact: FeedId;
   do {
-    contact = paretoSample(seed, authors).id;
-  } while (contact === author.id && authors.length > 1);
+    contact = paretoSample(seed, peers).id;
+  } while (contact === peer.id && peers.length > 1);
 
   let subtype = sampleCollection(seed, freq.CONTACT_TYPE_FREQUENCIES);
-  const authorFollows = follows.get(author.id)!;
-  const authorBlocks = blocks.get(author.id)!;
+  const peersFollows = follows.get(peer.id)!;
+  const peerBlocks = blocks.get(peer.id)!;
 
   if (subtype === 'unfollow') {
-    if (authorFollows.size > 0) {
-      contact = uniformSample(seed, Array.from(authorFollows));
+    if (peersFollows.size > 0) {
+      contact = uniformSample(seed, Array.from(peersFollows));
     } else {
       subtype = 'follow';
     }
   } else if (subtype === 'unblock') {
-    if (authorBlocks.size > 0) {
-      contact = uniformSample(seed, Array.from(authorBlocks));
+    if (peerBlocks.size > 0) {
+      contact = uniformSample(seed, Array.from(peerBlocks));
     } else {
       subtype = 'block';
     }
@@ -309,15 +306,11 @@ function generateAboutImage(seed: string) {
   }
 }
 
-function generateAboutContent(
-  seed: string,
-  author: Author,
-  authors: Array<Author>,
-) {
+function generateAboutContent(seed: string, peer: Peer, peers: Array<Peer>) {
   const about: FeedId =
     random(seed) < freq.ABOUT_OTHER_FREQUENCY
-      ? uniformSample(seed, authors).id
-      : author.id;
+      ? uniformSample(seed, peers).id
+      : peer.id;
   const subtype = sampleCollection(seed, freq.ABOUT_TYPE_FREQUENCIES);
   const hasName =
     subtype === 'name' ||
@@ -344,13 +337,12 @@ function generateAboutContent(
 }
 
 export async function generateMsgOrContent(
-  ssb: any,
   seed: string,
   i: number,
   latestmsg: number,
-  author: Author,
+  peer: Peer,
   msgsByType: MsgsByType,
-  authors: Array<Author>,
+  peers: Array<Peer>,
   tribes: TribesByAuthor,
   follows: Follows,
   blocks: Blocks,
@@ -370,19 +362,19 @@ export async function generateMsgOrContent(
   const type = sampleCollection(seed, freq.MSG_TYPE_FREQUENCIES);
   // Oldest and latest msgs are always a post authored by database owner
   if (i === 0 || i === latestmsg) {
-    return generatePostContent(seed, i, latestmsg, msgsByType, authors);
+    return generatePostContent(seed, i, latestmsg, msgsByType, peers);
   } else if (type === 'vote' && msgsByType.post?.length) {
     return generateVoteContent(seed, msgsByType);
   } else if (type === 'contact') {
-    return generateContactContent(seed, author, authors, follows, blocks);
+    return generateContactContent(seed, peer, peers, follows, blocks);
   } else if (type === 'about') {
-    return generateAboutContent(seed, author, authors);
+    return generateAboutContent(seed, peer, peers);
   } else if (type === 'private') {
-    const [a, as] = [author, authors]; // sorry Prettier, i want a one-liner
-    return generatePrivate(ssb, seed, i, latestmsg, msgsByType, tribes, a, as);
+    const [a, as] = [peer, peers]; // sorry Prettier, i want a one-liner
+    return generatePrivate(seed, i, latestmsg, msgsByType, tribes, a, as);
   } else if (type === 'post') {
-    return generatePostContent(seed, i, latestmsg, msgsByType, authors);
+    return generatePostContent(seed, i, latestmsg, msgsByType, peers);
   } else {
-    return generatePostContent(seed, i, latestmsg, msgsByType, authors);
+    return generatePostContent(seed, i, latestmsg, msgsByType, peers);
   }
 }

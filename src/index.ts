@@ -2,11 +2,15 @@ import pify = require('promisify-4loc');
 import {ContactContent, Msg} from 'ssb-typescript';
 import {makeSSB} from './ssb';
 import {generateAuthors, generateMsgOrContent} from './generate';
-import {Opts, MsgsByType, Follows, Blocks, TribesByAuthor} from './types';
+import {Opts, MsgsByType, Follows, Blocks, TribesByAuthor, Peer} from './types';
 import {paretoSample} from './sample';
 import slimify from './slimify';
 import writeReportFile from './report';
 import * as defaults from './defaults';
+import fs = require('fs');
+import path = require('path');
+const TestBot = require('scuttle-testbot');
+const __ts = require('monotonic-timestamp');
 
 function* range(start: number, end: number) {
   if (start > end) return;
@@ -15,6 +19,17 @@ function* range(start: number, end: number) {
     yield i;
     i++;
   }
+}
+
+function saveSecret(
+  keys: unknown | undefined,
+  outputDir: string,
+  filename: string = 'secret',
+) {
+  if (!keys) return;
+  const filePath = path.join(outputDir, filename);
+  const fileContent = JSON.stringify(keys, null, 2);
+  fs.writeFileSync(filePath, fileContent, {encoding: 'utf-8'});
 }
 
 export = async function generateFixture(opts?: Partial<Opts>) {
@@ -28,15 +43,23 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const verbose = opts?.verbose ?? defaults.VERBOSE;
 
   const authorsKeys = generateAuthors(seed, numAuthors);
-  const ssb = makeSSB(authorsKeys, outputDir);
 
+  const mainKeys = authorsKeys[0];
+  const othersKeys = authorsKeys.slice(1);
+
+  saveSecret(mainKeys, outputDir, 'secret');
+  saveSecret(othersKeys[0], outputDir, 'secret-b');
+  saveSecret(othersKeys[1], outputDir, 'secret-c');
+
+  const mainPeer: Peer = makeSSB(mainKeys, outputDir);
+  const otherPeers: Array<Peer> = othersKeys.map((keys) => makeSSB(keys));
+  const peers = [mainPeer, ...otherPeers];
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
-  const authors = authorsKeys.map((keys) => ssb.createFeed(keys));
   const tribesByAuthor: TribesByAuthor = new Map();
 
-  const follows: Follows = new Map(authors.map((a) => [a.id, new Set()]));
-  const blocks: Blocks = new Map(authors.map((a) => [a.id, new Set()]));
+  const follows: Follows = new Map(peers.map((a) => [a.id, new Set()]));
+  const blocks: Blocks = new Map(peers.map((a) => [a.id, new Set()]));
   function updateFollowsAndBlocks(msg: Msg<ContactContent>) {
     const authorFollows = follows.get(msg.value.author)!;
     if (msg.value.content.following === true) {
@@ -53,17 +76,16 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   }
 
   for (let i of range(0, numMessages - 1)) {
-    let author = paretoSample(seed, authors);
-    // OLDESTMSG and LATESTMSG are always authored by database owner
-    if (i === 0 || i === latestmsg) author = authors[0];
+    // OLDESTMSG and LATESTMSG are always authored by the main peer
+    const peer =
+      i === 0 || i === latestmsg ? mainPeer : paretoSample(seed, peers);
     const msgOrContent = await generateMsgOrContent(
-      ssb,
       seed,
       i,
       latestmsg,
-      author,
+      peer,
       msgsByType,
-      authors,
+      peers,
       tribesByAuthor,
       follows,
       blocks,
@@ -72,7 +94,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
     const posted: Msg =
       maybeMsg?.key && maybeMsg?.timestamp && maybeMsg?.value
         ? maybeMsg!
-        : await pify<any>(author.add)(msgOrContent);
+        : await pify<any>(peer.publish)(msgOrContent);
 
     if (posted?.value.content) {
       msgs.push(posted);
@@ -92,9 +114,17 @@ export = async function generateFixture(opts?: Partial<Opts>) {
     }
   }
 
-  if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
+  // We need the replication timestamps (`msg.key`) to be deterministic
+  // so we're resetting the timestamp generator to a date which is
+  // likely/HOPEFULLY larger than any given `msg.value.timestamp`
+  __ts?.reset?.(defaults.REPLICATION_TIMESTAMP);
+  for (const otherPeer of otherPeers) {
+    await pify(TestBot.replicate)({from: otherPeer, to: mainPeer});
+  }
 
-  await pify<unknown>(ssb.close)();
+  if (report) writeReportFile(msgs, msgsByType, peers, follows, outputDir);
+
+  await Promise.all(peers.map((peer) => pify<unknown>(peer.close)()));
 
   if (slim) slimify(outputDir);
 };

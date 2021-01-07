@@ -31,6 +31,7 @@ function generateAndTest(opts, cb) {
           });
         }
         const msgs = arr.map((x) => x.value);
+        msgs.sort((a, b) => a.value.timestamp - b.value.timestamp);
         cb(err, msgs, cleanup);
       }),
     );
@@ -115,11 +116,36 @@ test('marks first and last msg as OLDESTMSG and LATESTMSG', (t) => {
   );
 });
 
-test('can generate about msgs', (t) => {
+test('can generate vote msgs', (t) => {
   generateAndTest(
     {
       outputDir: 'ssb-fixtures-test-3',
-      seed: 'rosette',
+      seed: 'dog4',
+      messages: 4,
+      authors: 1,
+    },
+    (err, msgs, cleanup) => {
+      t.error(err, 'no error');
+      t.equals(msgs.length, 4, 'there are 4 msgs');
+
+      const m = msgs[1];
+      t.equals(m.value.content.type, 'vote', '2nd msg is an about');
+      t.equals(m.value.content.vote.value, 1, 'vote.value is 1');
+      t.equals(m.value.content.vote.expression, 'y', 'vote.expression');
+      t.true(Ref.isMsg(m.value.content.vote.link), 'vote.link');
+
+      cleanup(() => {
+        t.end();
+      });
+    },
+  );
+});
+
+test('can generate about msgs', (t) => {
+  generateAndTest(
+    {
+      outputDir: 'ssb-fixtures-test-4',
+      seed: 'dog2',
       messages: 5,
       authors: 1,
     },
@@ -128,8 +154,8 @@ test('can generate about msgs', (t) => {
       t.equals(msgs.length, 5, 'there are 5 msgs');
 
       t.equals(msgs[3].value.content.type, 'about', '4th msg is an about');
-      t.equals(typeof msgs[3].value.content.image, 'object', '"image" object');
-      t.true(Ref.isBlob(msgs[3].value.content.image.link), 'link is blob');
+      t.equals(msgs[3].value.content.name, 'magna esse', 'contains name');
+      t.true(Ref.isBlob(msgs[3].value.content.image), 'contains image');
 
       cleanup(() => {
         t.end();
@@ -141,15 +167,15 @@ test('can generate about msgs', (t) => {
 test('can generate tribes', (t) => {
   generateAndTest(
     {
-      outputDir: 'ssb-fixtures-test-4',
-      seed: 'dog8',
+      outputDir: 'ssb-fixtures-test-5',
+      seed: 'apple',
       messages: 5,
       authors: 3,
     },
     (err, msgs, cleanup) => {
       t.error(err, 'no error');
-      t.equals(typeof msgs[3].value.content, 'string', '4th msg is encrypted');
-      t.true(msgs[3].value.content.endsWith('.box2'), 'encrypted with box2');
+      t.equals(typeof msgs[2].value.content, 'string', '3rd msg is encrypted');
+      t.true(msgs[2].value.content.endsWith('.box2'), 'encrypted with box2');
       cleanup(() => {
         t.end();
       });

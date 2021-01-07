@@ -7,7 +7,7 @@
   "scripts": {
     "compile": "tsc",
     "pretest": "npm run compile",
-    "test": "tape test/*.js"
+    "test": "tape test/*.js | tap-spec"
   },
   "repository": {
     "url": "https://github.com/staltz/ssb-fixtures"
@@ -33,6 +33,7 @@
     "ssb-private1": "1.0.1",
     "ssb-query": "2.4.5",
     "ssb-tribes": "0.4.1",
+    "tap-spec": "^5.0.0",
     "yargs": "^16.1.0"
   },
   "devDependencies": {

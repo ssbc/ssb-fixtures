@@ -9,6 +9,7 @@ import writeReportFile from './report';
 import * as defaults from './defaults';
 import fs = require('fs');
 import path = require('path');
+const mkdirp = require('mkdirp');
 const TestBot = require('scuttle-testbot');
 const __ts = require('monotonic-timestamp');
 
@@ -27,6 +28,7 @@ function saveSecret(
   filename: string = 'secret',
 ) {
   if (!keys) return;
+  mkdirp.sync(outputDir);
   const filePath = path.join(outputDir, filename);
   const fileContent = JSON.stringify(keys, null, 2);
   fs.writeFileSync(filePath, fileContent, {encoding: 'utf-8'});

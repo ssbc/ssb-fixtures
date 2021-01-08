@@ -7,7 +7,7 @@
   "scripts": {
     "compile": "tsc",
     "pretest": "npm run compile",
-    "test": "tape test/*.js | tap-spec"
+    "test": "tape test/*.js | tap-bail | tap-spec"
   },
   "repository": {
     "url": "https://github.com/staltz/ssb-fixtures"
@@ -33,7 +33,6 @@
     "ssb-private1": "1.0.1",
     "ssb-query": "2.4.5",
     "ssb-tribes": "0.4.1",
-    "tap-spec": "^5.0.0",
     "yargs": "^16.1.0"
   },
   "devDependencies": {
@@ -44,6 +43,8 @@
     "pull-stream": "3.6.14",
     "ssb-ref": "2.14.2",
     "ssb-typescript": "^2.1.0",
+    "tap-bail": "^1.0.0",
+    "tap-spec": "^5.0.0",
     "tape": "^5.0.1",
     "typescript": "^4.0.3"
   },

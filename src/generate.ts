@@ -23,6 +23,8 @@ import {
   random,
 } from './sample';
 import {Peer, Blocks, Follows, MsgsByType, TribesByAuthor} from './types';
+import util = require('util');
+const sleep = util.promisify(setTimeout);
 
 let __lorem: any;
 
@@ -152,20 +154,21 @@ async function generatePrivate(
   tribesByAuthors: TribesByAuthor,
   peer: Peer,
   peers: Array<Peer>,
-): Promise<Msg | Privatable<Content>> {
+): Promise<[Msg | Privatable<Content>, Array<FeedId>?]> {
   const type = sampleCollection(seed, freq.PRIVATE_FREQUENCIES);
   if (type === 'tribe_creation' || tribesByAuthors.size === 0) {
     const {groupId, groupInitMsg} = await pify<any>(peer.tribes.create)(null);
     const groupIds = tribesByAuthors.get(peer.id) ?? new Set();
     groupIds.add(groupId);
     tribesByAuthors.set(peer.id, groupIds);
-    // console.log(`${peer.id.slice(0, 6)} created tribe ${groupId.slice(0, 6)}`);
-    return groupInitMsg as Msg;
+    console.log(`${peer.id.slice(0, 6)} created tribe ${groupId.slice(0, 6)}`);
+    return [groupInitMsg as Msg];
   } else if (
     type === 'tribe_invitation' &&
     tribesByAuthors.has(peer.id) &&
     peers.length > 1
   ) {
+    await sleep(3000); // because ssb-tribes has race conditions :(
     const groupId = uniformSample(
       seed,
       Array.from(tribesByAuthors.get(peer.id)?.keys() ?? []),
@@ -184,13 +187,14 @@ async function generatePrivate(
       groupIds.add(groupId);
       tribesByAuthors.set(inviteeId, groupIds);
     }
-    // console.log(
-    //   `${peer.id.slice(0, 6)} invited ${inviteeIds
-    //     .map((id) => id.slice(0, 6))
-    //     .join(',')} to tribe ${groupId.slice(0, 6)}`,
-    // );
-    return msg as Msg;
+    console.log(
+      `${peer.id.slice(0, 6)} invited ${inviteeIds
+        .map((id) => id.slice(0, 6))
+        .join(',')} to tribe ${groupId.slice(0, 6)}`,
+    );
+    return [msg as Msg, inviteeIds];
   } else if (type === 'tribe_message' && tribesByAuthors.has(peer.id)) {
+    await sleep(3000); // because ssb-tribes has race conditions :(
     const content: Privatable<PostContent> = generatePostContent(
       seed,
       i,
@@ -204,10 +208,10 @@ async function generatePrivate(
       Array.from(tribesByAuthors.get(peer.id)?.keys() ?? []),
     );
     content.recps = [groupId];
-    // console.log(
-    //   `${peer.id.slice(0, 6)} posted to tribe ${groupId.slice(0, 6)}`,
-    // );
-    return content;
+    console.log(
+      `${peer.id.slice(0, 6)} posted to tribe ${groupId.slice(0, 6)}`,
+    );
+    return [content];
   } else {
     const content: Privatable<PostContent> = generatePostContent(
       seed,
@@ -219,7 +223,7 @@ async function generatePrivate(
     );
     const recps = generateRecipients(seed, peer, peers);
     content.recps = recps;
-    return content;
+    return [content];
   }
 }
 
@@ -346,7 +350,7 @@ export async function generateMsgOrContent(
   tribes: TribesByAuthor,
   follows: Follows,
   blocks: Blocks,
-): Promise<Msg | Content> {
+): Promise<[Msg | Content, Array<FeedId>?]> {
   __lorem = new LoremIpsum({
     random: random,
     sentencesPerParagraph: {
@@ -362,19 +366,19 @@ export async function generateMsgOrContent(
   const type = sampleCollection(seed, freq.MSG_TYPE_FREQUENCIES);
   // Oldest and latest msgs are always a post authored by database owner
   if (i === 0 || i === latestmsg) {
-    return generatePostContent(seed, i, latestmsg, msgsByType, peers);
+    return [generatePostContent(seed, i, latestmsg, msgsByType, peers)];
   } else if (type === 'vote' && msgsByType.post?.length) {
-    return generateVoteContent(seed, msgsByType);
+    return [generateVoteContent(seed, msgsByType)];
   } else if (type === 'contact') {
-    return generateContactContent(seed, peer, peers, follows, blocks);
+    return [generateContactContent(seed, peer, peers, follows, blocks)];
   } else if (type === 'about') {
-    return generateAboutContent(seed, peer, peers);
+    return [generateAboutContent(seed, peer, peers)];
   } else if (type === 'private') {
-    const [a, as] = [peer, peers]; // sorry Prettier, i want a one-liner
-    return generatePrivate(seed, i, latestmsg, msgsByType, tribes, a, as);
+    const [p, ps] = [peer, peers]; // sorry Prettier, i want a one-liner
+    return generatePrivate(seed, i, latestmsg, msgsByType, tribes, p, ps);
   } else if (type === 'post') {
-    return generatePostContent(seed, i, latestmsg, msgsByType, peers);
+    return [generatePostContent(seed, i, latestmsg, msgsByType, peers)];
   } else {
-    return generatePostContent(seed, i, latestmsg, msgsByType, peers);
+    return [generatePostContent(seed, i, latestmsg, msgsByType, peers)];
   }
 }

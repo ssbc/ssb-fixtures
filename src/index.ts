@@ -59,6 +59,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
   const tribesByAuthor: TribesByAuthor = new Map();
+  const peersById = new Map(peers.map((p) => [p.id, p]));
 
   const follows: Follows = new Map(peers.map((a) => [a.id, new Set()]));
   const blocks: Blocks = new Map(peers.map((a) => [a.id, new Set()]));
@@ -81,7 +82,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
     // OLDESTMSG and LATESTMSG are always authored by the main peer
     const peer =
       i === 0 || i === latestmsg ? mainPeer : paretoSample(seed, peers);
-    const msgOrContent = await generateMsgOrContent(
+    const [msgOrContent, replicatePeersIds] = await generateMsgOrContent(
       seed,
       i,
       latestmsg,
@@ -114,8 +115,19 @@ export = async function generateFixture(opts?: Partial<Opts>) {
         console.log(`${JSON.stringify(posted, null, 2)}\n`);
       }
     }
+
+    // Replicate from `peer` to other relevant peers that might need
+    // this newly created message
+    if (replicatePeersIds?.length) {
+      const replicatePeers = replicatePeersIds.map((id) => peersById.get(id)!);
+      for (const otherPeer of replicatePeers) {
+        await pify(TestBot.replicate)({from: peer, to: otherPeer});
+      }
+    }
   }
 
+  // Replicate from other peers to mainPeer
+  //
   // We need the replication timestamps (`msg.key`) to be deterministic
   // so we're resetting the timestamp generator to a date which is
   // likely/HOPEFULLY larger than any given `msg.value.timestamp`

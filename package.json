@@ -32,7 +32,7 @@
     "ssb-master": "1.0.3",
     "ssb-private1": "1.0.1",
     "ssb-query": "2.4.5",
-    "ssb-tribes": "0.4.1",
+    "ssb-tribes": "^2.0.1",
     "yargs": "^16.1.0"
   },
   "devDependencies": {

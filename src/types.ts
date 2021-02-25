@@ -22,11 +22,12 @@ export type Peer = {
   publish: (x: any, cb: (err: any, val: any) => void) => void;
   close: (cb?: (err: any, val: any) => void) => void;
   tribes: {
-    [k: string]: any;
+    list: (cb: (err: any, val: string[]) => void) => void;
+    create: () => any;
+    invite: (x: any) => any;
   };
   id: FeedId;
 };
 
-export type TribesByAuthor = Map<FeedId, Set<GroupIp>>;
 export type Follows = Map<FeedId, Set<FeedId>>;
 export type Blocks = Map<FeedId, Set<FeedId>>;

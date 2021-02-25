@@ -2,7 +2,7 @@ import pify = require('promisify-4loc');
 import {ContactContent, Msg} from 'ssb-typescript';
 import {makeSSB} from './ssb';
 import {generateAuthors, generateMsgOrContent} from './generate';
-import {Opts, MsgsByType, Follows, Blocks, TribesByAuthor, Peer} from './types';
+import {Opts, MsgsByType, Follows, Blocks, Peer} from './types';
 import {paretoSample} from './sample';
 import slimify from './slimify';
 import writeReportFile from './report';
@@ -58,7 +58,6 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const peers = [mainPeer, ...otherPeers];
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
-  const tribesByAuthor: TribesByAuthor = new Map();
   const peersById = new Map(peers.map((p) => [p.id, p]));
 
   const follows: Follows = new Map(peers.map((a) => [a.id, new Set()]));
@@ -89,7 +88,6 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       peer,
       msgsByType,
       peers,
-      tribesByAuthor,
       follows,
       blocks,
     );

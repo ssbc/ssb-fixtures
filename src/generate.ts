@@ -22,7 +22,7 @@ import {
   somewhatGaussian,
   random,
 } from './sample';
-import {Peer, Blocks, Follows, MsgsByType, TribesByAuthor} from './types';
+import {Peer, Blocks, Follows, MsgsByType} from './types';
 import util = require('util');
 const sleep = util.promisify(setTimeout);
 
@@ -151,27 +151,23 @@ async function generatePrivate(
   i: number,
   latestmsg: number,
   msgsByType: MsgsByType,
-  tribesByAuthors: TribesByAuthor,
   peer: Peer,
   peers: Array<Peer>,
 ): Promise<[Msg | Privatable<Content>, Array<FeedId>?]> {
   const type = sampleCollection(seed, freq.PRIVATE_FREQUENCIES);
-  if (type === 'tribe_creation' || tribesByAuthors.size === 0) {
+  const peerTribes = await pify<string[]>(peer.tribes.list)()
+  if (type === 'tribe_creation' || peerTribes.length == 0) {
     const {groupId, groupInitMsg} = await pify<any>(peer.tribes.create)(null);
-    const groupIds = tribesByAuthors.get(peer.id) ?? new Set();
-    groupIds.add(groupId);
-    tribesByAuthors.set(peer.id, groupIds);
     console.log(`${peer.id.slice(0, 6)} created tribe ${groupId.slice(0, 6)}`);
     return [groupInitMsg as Msg];
   } else if (
     type === 'tribe_invitation' &&
-    tribesByAuthors.has(peer.id) &&
+    peerTribes.length > 0 &&
     peers.length > 1
   ) {
-    await sleep(3000); // because ssb-tribes has race conditions :(
     const groupId = uniformSample(
       seed,
-      Array.from(tribesByAuthors.get(peer.id)?.keys() ?? []),
+      peerTribes,
     );
     const inviteeIds: Array<FeedId> = paretoSampleMany(
       seed,
@@ -182,19 +178,13 @@ async function generatePrivate(
     inviteeIds.shift(); // remove peer.id
     const text = __lorem.generateWords(randomInt(seed, 1, 9));
     const msg = await pify(peer.tribes.invite)(groupId, inviteeIds, {text});
-    for (const inviteeId of inviteeIds) {
-      const groupIds = tribesByAuthors.get(inviteeId) ?? new Set();
-      groupIds.add(groupId);
-      tribesByAuthors.set(inviteeId, groupIds);
-    }
     console.log(
       `${peer.id.slice(0, 6)} invited ${inviteeIds
         .map((id) => id.slice(0, 6))
         .join(',')} to tribe ${groupId.slice(0, 6)}`,
     );
     return [msg as Msg, inviteeIds];
-  } else if (type === 'tribe_message' && tribesByAuthors.has(peer.id)) {
-    await sleep(3000); // because ssb-tribes has race conditions :(
+  } else if (type === 'tribe_message' && peerTribes.length > 0) {
     const content: Privatable<PostContent> = generatePostContent(
       seed,
       i,
@@ -205,7 +195,7 @@ async function generatePrivate(
     );
     const groupId = uniformSample(
       seed,
-      Array.from(tribesByAuthors.get(peer.id)?.keys() ?? []),
+      peerTribes
     );
     content.recps = [groupId];
     console.log(
@@ -347,7 +337,6 @@ export async function generateMsgOrContent(
   peer: Peer,
   msgsByType: MsgsByType,
   peers: Array<Peer>,
-  tribes: TribesByAuthor,
   follows: Follows,
   blocks: Blocks,
 ): Promise<[Msg | Content, Array<FeedId>?]> {
@@ -375,7 +364,7 @@ export async function generateMsgOrContent(
     return [generateAboutContent(seed, peer, peers)];
   } else if (type === 'private') {
     const [p, ps] = [peer, peers]; // sorry Prettier, i want a one-liner
-    return generatePrivate(seed, i, latestmsg, msgsByType, tribes, p, ps);
+    return generatePrivate(seed, i, latestmsg, msgsByType, p, ps);
   } else if (type === 'post') {
     return [generatePostContent(seed, i, latestmsg, msgsByType, peers)];
   } else {

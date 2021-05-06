@@ -27,8 +27,9 @@ export function makeSSB(authorsKeys: Array<any>, outputDir: string): any {
 
   saveSecret(hops0Keys, outputDir);
 
-  if (authorsKeys[1]) saveSecret(authorsKeys[1], outputDir, 'secret-b');
-  if (authorsKeys[2]) saveSecret(authorsKeys[2], outputDir, 'secret-c');
+  for (let i = 1; i < authorsKeys.length; i++) {
+    saveSecret(authorsKeys[i], outputDir, `secret-${i}`);
+  }
 
   return peer;
 }

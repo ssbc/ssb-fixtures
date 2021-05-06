@@ -6,8 +6,8 @@
   "bin": "lib/bin.js",
   "scripts": {
     "compile": "tsc",
-    "pretest": "npm run compile",
-    "test": "tape test/*.js"
+    "test": "npm run compile && npm run tape",
+    "tape": "tape test/*.js"
   },
   "repository": {
     "url": "https://github.com/staltz/ssb-fixtures"

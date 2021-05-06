@@ -90,5 +90,5 @@ export = async function generateFixture(opts?: Partial<Opts>) {
 
   await pify<unknown>(ssb.close)();
 
-  if (slim) slimify(outputDir);
+  if (slim) slimify(authors.length, outputDir);
 };

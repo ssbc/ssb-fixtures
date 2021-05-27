@@ -20,7 +20,7 @@ export default function slimify(authorCount: number, outputDir: string) {
       fs.copyFileSync(path.join(outputDir, p), path.join(tmpDir, p));
     }
   }
-  rimraf.sync(outputDir);
+  rimraf.sync(outputDir, {maxBusyTries: 3}); // Windows needs the opts
   fs.mkdirSync(outputDir);
   for (let p of preserved) {
     if (fs.existsSync(path.join(tmpDir, p))) {

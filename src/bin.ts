@@ -27,6 +27,12 @@ const argv = yargs(process.argv)
     describe: 'Output all secret key files',
   })
 
+  .option('followGraph', {
+    default: defaults.FOLLOW_GRAPH,
+    type: 'boolean',
+    describe: 'Output follow-graph.json too',
+  })
+
   .describe('report', 'Create a report.md file in the fixture')
   .default('report', defaults.REPORT)
 

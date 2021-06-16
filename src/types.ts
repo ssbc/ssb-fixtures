@@ -8,6 +8,7 @@ export type Opts = {
   authors: number;
   slim: boolean;
   allkeys: boolean;
+  followGraph: boolean;
   report: boolean;
   latestmsg: number;
   verbose: boolean;

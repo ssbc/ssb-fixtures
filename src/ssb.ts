@@ -3,13 +3,20 @@ const makeConfig = require('ssb-config/inject');
 import fs = require('fs');
 import path = require('path');
 
-export function makeSSB(authorsKeys: Array<any>, outputDir: string): any {
+const noop = () => {};
+
+export function makeSSB(
+  authorsKeys: Array<any>,
+  outputDir: string,
+  followGraph: boolean,
+): any {
   const hops0Keys = authorsKeys[0];
 
   const peer = SecretStack({appKey: require('ssb-caps').shs})
     .use(require('ssb-master'))
     .use(require('ssb-logging'))
     .use(require('ssb-db'))
+    .use(followGraph ? require('ssb-friends') : noop)
     .call(
       null,
       makeConfig('ssb', {
@@ -17,6 +24,9 @@ export function makeSSB(authorsKeys: Array<any>, outputDir: string): any {
         keys: hops0Keys,
         logging: {
           level: 'info',
+        },
+        friends: {
+          hookReplicate: false,
         },
         connections: {
           incoming: {},

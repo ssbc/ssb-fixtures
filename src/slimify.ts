@@ -18,6 +18,7 @@ export default function slimify(
           .map((_, i) => `secret-${i + 1}`)
       : []),
     'flume/log.offset',
+    'follow-graph.json',
     'report.md',
   ];
   for (let p of preserved) {

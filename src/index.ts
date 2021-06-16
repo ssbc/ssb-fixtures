@@ -1,3 +1,5 @@
+import fs = require('fs');
+import path = require('path');
 import pify = require('promisify-4loc');
 import {ContactContent, Msg} from 'ssb-typescript';
 import {makeSSB} from './ssb';
@@ -24,12 +26,13 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const seed = opts?.seed ?? defaults.randomSeed();
   const slim = opts?.slim ?? defaults.SLIM;
   const allkeys = opts?.allkeys ?? defaults.ALL_KEYS;
+  const followGraph = opts?.followGraph ?? defaults.FOLLOW_GRAPH;
   const report = opts?.report ?? defaults.REPORT;
   const latestmsg = (opts?.latestmsg ?? numMessages) - 1;
   const verbose = opts?.verbose ?? defaults.VERBOSE;
 
   const authorsKeys = generateAuthors(seed, numAuthors);
-  const ssb = makeSSB(authorsKeys, outputDir);
+  const ssb = makeSSB(authorsKeys, outputDir, followGraph);
 
   const msgs: Array<Msg> = [];
   const msgsByType: MsgsByType = {};
@@ -88,6 +91,13 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   }
 
   if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
+
+  if (followGraph) {
+    const graph = await pify(ssb.friends.get)({});
+    const graphFilepath = path.join(outputDir, 'follow-graph.json');
+    const graphJSON = JSON.stringify(graph, null, 2);
+    await fs.promises.writeFile(graphFilepath, graphJSON, {encoding: 'utf-8'});
+  }
 
   await pify<unknown>(ssb.close)();
 

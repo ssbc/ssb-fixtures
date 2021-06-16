@@ -25,6 +25,7 @@
     "ssb-caps": "1.1.0",
     "ssb-config": "3.4.5",
     "ssb-db": "20.3.0",
+    "ssb-friends": "4.4.7",
     "ssb-keys": "8.0.0",
     "ssb-logging": "1.0.0",
     "ssb-master": "1.0.3",

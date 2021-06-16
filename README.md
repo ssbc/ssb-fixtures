@@ -18,7 +18,8 @@ Options:
   --messages   Num of msgs to generate                          [default: 10000]
   --authors    Num of feeds to generate                           [default: 150]
   --outputDir  Directory for the output fixture                [default: ./data]
-  --slim       Keep only essential flume files in the fixture    [default: true]
+  --slim       Keep only essential flume files         [boolean] [default: true]
+  --allkeys    Output all secret key files            [boolean] [default: false]
   --report     Create a report.md file in the fixture            [default: true]
   --latestmsg  1-based index position of the LATESTMSG
   --verbose    Print all generated msgs to stdout               [default: false]

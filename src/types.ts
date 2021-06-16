@@ -7,6 +7,7 @@ export type Opts = {
   messages: number;
   authors: number;
   slim: boolean;
+  allkeys: boolean;
   report: boolean;
   latestmsg: number;
   verbose: boolean;

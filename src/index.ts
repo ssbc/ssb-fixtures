@@ -23,6 +23,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const numAuthors = Math.max(opts?.authors ?? defaults.AUTHORS, 1);
   const seed = opts?.seed ?? defaults.randomSeed();
   const slim = opts?.slim ?? defaults.SLIM;
+  const allkeys = opts?.allkeys ?? defaults.ALL_KEYS;
   const report = opts?.report ?? defaults.REPORT;
   const latestmsg = (opts?.latestmsg ?? numMessages) - 1;
   const verbose = opts?.verbose ?? defaults.VERBOSE;
@@ -90,5 +91,5 @@ export = async function generateFixture(opts?: Partial<Opts>) {
 
   await pify<unknown>(ssb.close)();
 
-  if (slim) slimify(authors.length, outputDir);
+  if (slim) slimify(authors.length, outputDir, allkeys);
 };

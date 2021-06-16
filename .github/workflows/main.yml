@@ -65,15 +65,15 @@ jobs:
 
       - name: Build 'dinghy' fixture
         run: |
-          node lib/bin.js --seed=dinghy --messages=10000 --authors=500 --outputDir=dinghy
+          node lib/bin.js --seed=dinghy --messages=10000 --authors=500 --allkeys --outputDir=dinghy
 
       - name: Build 'sloop' fixture
         run: |
-          node lib/bin.js --seed=sloop --messages=100000 --authors=2000 --outputDir=sloop
+          node lib/bin.js --seed=sloop --messages=100000 --authors=2000 --allkeys --outputDir=sloop
 
       - name: Build 'catamaran' fixture
         run: |
-          node lib/bin.js --seed=catamaran --messages=1000000 --authors=8000 --outputDir=catamaran
+          node lib/bin.js --seed=catamaran --messages=1000000 --authors=8000 --allkeys --outputDir=catamaran
 
       - name: Compress 'dinghy'
         run: cd ./dinghy && tar -zcvf ../v${{ env.MAJOR_VERSION }}-dinghy-m10000-a500.tar.gz . && cd ..

@@ -18,7 +18,13 @@ const argv = yargs(process.argv)
   .option('slim', {
     default: defaults.SLIM,
     type: 'boolean',
-    describe: 'Keep only essential flume files in the fixture',
+    describe: 'Keep only essential flume files',
+  })
+
+  .option('allkeys', {
+    default: defaults.ALL_KEYS,
+    type: 'boolean',
+    describe: 'Output all secret key files',
   })
 
   .describe('report', 'Create a report.md file in the fixture')

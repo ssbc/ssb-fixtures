@@ -4,13 +4,19 @@ import path = require('path');
 const mkdirp = require('mkdirp');
 const rimraf = require('rimraf');
 
-export default function slimify(authorCount: number, outputDir: string) {
+export default function slimify(
+  authorCount: number,
+  outputDir: string,
+  allkeys: boolean,
+) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ssb-fixture-gen-'));
   const preserved = [
     'secret',
-    ...Array(authorCount - 1)
-      .fill(0)
-      .map((_, i) => `secret-${i + 1}`),
+    ...(allkeys
+      ? Array(authorCount - 1)
+          .fill(0)
+          .map((_, i) => `secret-${i + 1}`)
+      : []),
     'flume/log.offset',
     'report.md',
   ];

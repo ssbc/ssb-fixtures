@@ -21,15 +21,15 @@
     "monotonic-timestamp": "staltz/mock-monotonic-timestamp",
     "promisify-4loc": "1.0.0",
     "rimraf": "^3.0.2",
-    "secret-stack": "6.3.1",
-    "ssb-caps": "1.1.0",
-    "ssb-config": "3.4.5",
+    "secret-stack": "^6.4.0",
+    "ssb-caps": "^1.1.0",
+    "ssb-config": "^3.4.5",
     "ssb-db": "20.3.0",
-    "ssb-friends": "4.4.7",
-    "ssb-keys": "8.0.0",
+    "ssb-friends": "^4.4.7",
+    "ssb-keys": "^8.1.0",
     "ssb-logging": "1.0.0",
     "ssb-master": "1.0.3",
-    "yargs": "^16.1.0"
+    "yargs": "^17.0.1"
   },
   "devDependencies": {
     "@types/node": "^14.14.2",
@@ -37,10 +37,10 @@
     "flumedb": "^2.1.8",
     "flumelog-offset": "^3.4.4",
     "pull-stream": "3.6.14",
-    "ssb-ref": "2.14.2",
-    "ssb-typescript": "^2.1.0",
-    "tape": "^5.0.1",
-    "typescript": "^4.0.3"
+    "ssb-ref": "2.14.3",
+    "ssb-typescript": "^2.5.0",
+    "tape": "^5.2.2",
+    "typescript": "^4.3.4"
   },
   "pnpm": {
     "overrides": {

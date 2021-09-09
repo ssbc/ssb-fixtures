@@ -23,13 +23,13 @@ function generateAndTest(opts, cb) {
       db.stream({keys: false, values: true}),
       pull.collect((err, arr) => {
         function cleanup(cb) {
-          db.close(() => {
-            rimraf.sync(outputDir);
-            cb();
-          });
+          rimraf.sync(outputDir);
+          cb();
         }
         const msgs = arr.map((x) => x.value);
-        cb(err, msgs, cleanup);
+        db.close(() => {
+          cb(err, msgs, cleanup);
+        });
       }),
     );
   });

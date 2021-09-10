@@ -8,5 +8,6 @@ export const ALL_KEYS = false;
 export const FOLLOW_GRAPH = false;
 export const REPORT = true;
 export const VERBOSE = false;
+export const INDEX_FEEDS = 0;
 export const randomSeed = generateRandomSeed;
 export const outputDir = () => path.join(process.cwd(), 'data');

@@ -1,7 +1,7 @@
 import fs = require('fs');
 import path = require('path');
 import pify = require('promisify-4loc');
-import {ContactContent, Msg} from 'ssb-typescript';
+import {ContactContent, FeedId, Msg} from 'ssb-typescript';
 import {makeSSB} from './ssb';
 import {generateAuthors, generateMsgContent} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
@@ -9,6 +9,7 @@ import {paretoSample} from './sample';
 import slimify from './slimify';
 import writeReportFile from './report';
 import * as defaults from './defaults';
+import {writeIndexFeeds} from './index-feeds';
 
 function* range(start: number, end: number) {
   if (start > end) return;
@@ -29,6 +30,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const followGraph = opts?.followGraph ?? defaults.FOLLOW_GRAPH;
   const report = opts?.report ?? defaults.REPORT;
   const latestmsg = (opts?.latestmsg ?? numMessages) - 1;
+  const indexFeedsPercentage = opts?.indexFeeds ?? defaults.INDEX_FEEDS;
   const verbose = opts?.verbose ?? defaults.VERBOSE;
 
   const authorsKeys = generateAuthors(seed, numAuthors);
@@ -92,14 +94,25 @@ export = async function generateFixture(opts?: Partial<Opts>) {
 
   if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
 
+  let graph: Record<FeedId, Record<FeedId, number>> | undefined;
   if (followGraph) {
-    const graph = await pify(ssb.friends.get)({});
+    graph = (await pify(ssb.friends.get)({})) as any;
     const graphFilepath = path.join(outputDir, 'follow-graph.json');
     const graphJSON = JSON.stringify(graph, null, 2);
     await fs.promises.writeFile(graphFilepath, graphJSON, {encoding: 'utf-8'});
   }
 
   await pify<unknown>(ssb.close)();
+
+  if (indexFeedsPercentage) {
+    await writeIndexFeeds(
+      seed,
+      indexFeedsPercentage,
+      authors,
+      graph,
+      outputDir,
+    );
+  }
 
   if (slim) slimify(authors.length, outputDir, allkeys);
 };

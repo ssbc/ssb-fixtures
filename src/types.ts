@@ -9,6 +9,7 @@ export type Opts = {
   slim: boolean;
   allkeys: boolean;
   followGraph: boolean;
+  indexFeeds: number;
   report: boolean;
   latestmsg: number;
   verbose: boolean;

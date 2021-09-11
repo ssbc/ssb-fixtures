@@ -130,9 +130,11 @@ export async function writeIndexFeeds(
     const sbot = startSbot(tempDir);
     await migrateDone(sbot);
 
+    const author = authors[i].id;
     for (const type of ['vote', 'post', 'contact', 'about']) {
-      await pify(sbot.indexFeedWriter.start)({author: authors[i].id, type});
+      await pify(sbot.indexFeedWriter.start)({author, type, private: false});
     }
+    await pify(sbot.indexFeedWriter.start)({author, type: null, private: true});
 
     await sbot._indexWritingComplete;
 

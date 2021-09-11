@@ -28,7 +28,7 @@
     "ssb-db": "20.3.0",
     "ssb-db2": "^2.4.0",
     "ssb-friends": "^4.4.7",
-    "ssb-index-feed-writer": "^0.3.5",
+    "ssb-index-feed-writer": "ssb-ngi-pointer/ssb-index-feed-writer#privateql0",
     "ssb-keys": "^8.1.0",
     "ssb-logging": "1.0.0",
     "ssb-master": "1.0.3",

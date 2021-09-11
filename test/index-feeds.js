@@ -2,27 +2,36 @@ const test = require('tape');
 const path = require('path');
 const ssbKeys = require('ssb-keys');
 const SecretStack = require('secret-stack');
-const {where, or, type, count, toPromise} = require('ssb-db2/operators');
+const {where, type, count, toPromise} = require('ssb-db2/operators');
 const {generateAndTest, db2MigrationDone} = require('./utils');
 
 test('generation supports simulating meta feeds and index feeds', (t) => {
   const M = 50;
   const A = 8;
-  const I = 30;
+  const I = 100;
 
   generateAndTest(
     {
       outputDir: 'ssb-fixtures-test-index-feeds',
-      seed: 'apple',
+      seed: 'banana',
       messages: M,
       authors: A,
       indexFeeds: I,
     },
     async (err, msgs, cleanup, outputDir) => {
+      // (seed + announce + add main + add indexes + add 5 index) * A
+      const META_MSG_COUNT = 9 * A;
+      // Seems like we should have only `M` index feed msgs, right?
+      // But it's truly `M + A` because each author will publish a **private**
+      // message `metafeed/seed` and this message will be taken into account
+      // for the index feed `{author,type:null,private:true}`.
+      const INDEX_MSG_COUNT = M + A;
+
       t.error(err, 'no error');
-      t.true(
-        msgs.length > M,
-        `there are more than ${M} msgs, in fact ` + msgs.length,
+      t.equals(
+        msgs.length,
+        M + META_MSG_COUNT + INDEX_MSG_COUNT,
+        'count normal msgs + meta msgs + index msgs',
       );
 
       const sbot = SecretStack({caps: require('ssb-caps')})
@@ -43,14 +52,16 @@ test('generation supports simulating meta feeds and index feeds', (t) => {
         count(),
         toPromise(),
       );
-      t.equals(indexMsgCount, 25, 'created some index feed msgs');
+      t.equals(indexMsgCount, INDEX_MSG_COUNT, 'created all index feed msgs');
 
       sbot.db.onDrain(() => {
-        sbot.close(() => {
-          cleanup(() => {
-            t.end();
+        setTimeout(() => {
+          sbot.close(() => {
+            cleanup(() => {
+              t.end();
+            });
           });
-        });
+        }, 500);
       });
     },
   );

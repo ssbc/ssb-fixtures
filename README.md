@@ -21,6 +21,7 @@ Options:
   --slim         Keep only essential flume files       [boolean] [default: true]
   --allkeys      Output all secret key files          [boolean] [default: false]
   --followGraph  Output follow-graph.json too         [boolean] [default: false]
+  --indexFeeds   Percentage (0–100) of authors to write index feeds [default: 0]
   --report       Create a report.md file in the fixture          [default: true]
   --latestmsg    1-based index position of the LATESTMSG
   --verbose      Print all generated msgs to stdout             [default: false]
@@ -39,6 +40,7 @@ Options:
 - Most recent msg is always `type: post` and contains the text "LATESTMSG"
 - Can generate an "extended" fixture
   - `npx ssb-fixtures --seed=foo --messages=1050 --authors=100 --latestmsg=1000` contains 50 more new messages more than `npx ssb-fixtures --seed=foo --messages=1000 --authors=100`
+- Can generate [meta feeds and index feeds](https://github.com/ssb-ngi-pointer/ssb-secure-partial-replication-spec)
 
 ## Versioning
 

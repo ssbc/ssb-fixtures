@@ -23,6 +23,7 @@ function sampleAuthors(seed: string, authors: Array<Author>, total: number) {
   // Sample other authors, but don't sample ones that are already recipient
   while (sampled.length < total) {
     let other: FeedId;
+    // Keep generating new `other` until `sampled` is filled-up with unique ids
     do {
       other = paretoSample(seed, authors).id;
     } while (sampled.some((r) => other === r));

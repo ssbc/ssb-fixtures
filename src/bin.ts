@@ -33,6 +33,11 @@ const argv = yargs(process.argv)
     describe: 'Output follow-graph.json too',
   })
 
+  .option('indexFeeds', {
+    default: defaults.INDEX_FEEDS,
+    describe: 'Percentage (0–100) of authors to write index feeds',
+  })
+
   .describe('report', 'Create a report.md file in the fixture')
   .default('report', defaults.REPORT)
 

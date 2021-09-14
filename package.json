@@ -4,6 +4,9 @@
   "description": "Generate a simulated .ssb folder",
   "main": "lib/index.js",
   "bin": "lib/bin.js",
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "compile": "tsc",
     "test": "npm run compile && npm run tape",

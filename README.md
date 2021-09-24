@@ -12,22 +12,23 @@ npx ssb-fixtures --messages=1000 --authors=100
 ssb-fixtures [opts]
 
 Options:
-  --help            Show help                                        [boolean]
-  --version         Show version number                              [boolean]
+  --help            Show help                                          [boolean]
+  --version         Show version number                                [boolean]
   --seed            String for deterministic generation
-  --messages        Num of msgs to generate                   [default: 10000]
-  --authors         Num of feeds to generate                    [default: 150]
-  --outputDir       Directory for the output fixture         [default: ./data]
-  --slim            Keep only essential flume files  [boolean] [default: true]
-  --allkeys         Output all secret key files     [boolean] [default: false]
-  --followGraph     Output follow-graph.json too    [boolean] [default: false]
+  --messages        Num of msgs to generate                     [default: 10000]
+  --authors         Num of feeds to generate                      [default: 150]
+  --outputDir       Directory for the output fixture           [default: ./data]
+  --slim            Keep only essential flume files    [boolean] [default: true]
+  --allkeys         Output all secret key files       [boolean] [default: false]
+  --followGraph     Output follow-graph.json too      [boolean] [default: false]
   --indexFeeds      Percentage (0–100) of authors to write index feeds
-                                                                  [default: 0]
+                                                                    [default: 0]
   --indexFeedTypes  Comma-separated msg types for indexes
-                                                    [default: "about,contact"]
-  --report          Create a report.md file in the fixture     [default: true]
+                                                      [default: "about,contact"]
+  --report          Create a report.md file in the fixture       [default: true]
   --latestmsg       1-based index position of the LATESTMSG
-  --verbose         Print all generated msgs to stdout        [default: false]
+  --progress        Print progress report to stdout   [boolean] [default: false]
+  --verbose         Print all generated msgs to stdout          [default: false]
 ```
 
 ## Features
@@ -56,6 +57,5 @@ This **does not follow SemVer**. That's because we want to version the datasets 
 ## TODO
 
 - Support `npm` and `npx` (it installs multiple versions of mock-monotonic-timestamp, messing up the mutable counter)
-- Tell what's happening, in stdout
 - Generate channel messages
 - Private threads (currently all private messages are "root")

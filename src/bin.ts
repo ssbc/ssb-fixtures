@@ -48,6 +48,12 @@ const argv = yargs(process.argv)
 
   .describe('latestmsg', '1-based index position of the LATESTMSG')
 
+  .option('progress', {
+    default: defaults.PROGRESS,
+    type: 'boolean',
+    describe: 'Print progress report to stdout',
+  })
+
   .describe('verbose', 'Print all generated msgs to stdout')
   .default('verbose', defaults.VERBOSE)
 

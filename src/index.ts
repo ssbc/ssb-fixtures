@@ -2,6 +2,7 @@ import fs = require('fs');
 import path = require('path');
 import pify = require('promisify-4loc');
 import {ContactContent, FeedId, Msg} from 'ssb-typescript';
+import ora = require('ora')
 import {makeSSB} from './ssb';
 import {generateAuthors, generateMsgContent} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
@@ -33,7 +34,9 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const indexFeedsPercentage = opts?.indexFeeds ?? defaults.INDEX_FEEDS;
   const indexFeedTypes = opts?.indexFeedTypes ?? defaults.INDEX_FEED_TYPES;
   const verbose = opts?.verbose ?? defaults.VERBOSE;
+  const progress = opts?.progress ?? defaults.PROGRESS;
 
+  const spinner = progress ? ora('Setting up').start() : null
   const authorsKeys = generateAuthors(seed, numAuthors);
   const ssb = makeSSB(authorsKeys, outputDir, followGraph);
 
@@ -59,6 +62,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   }
 
   for (let i of range(0, numMessages - 1)) {
+    if (spinner) spinner.text = `Generating msg ${i + 1} / ${numMessages}`;
     let author = paretoSample(seed, authors);
     // OLDESTMSG and LATESTMSG are always authored by database owner
     if (i === 0 || i === latestmsg) author = authors[0];
@@ -92,15 +96,27 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       }
     }
   }
+  spinner?.succeed(`Generated ${numMessages} messages`)
 
   if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
 
-  let graph: Record<FeedId, Record<FeedId, number>> | undefined;
+  let graph: Record<FeedId, Record<FeedId, boolean | null>> | undefined;
   if (followGraph) {
-    graph = (await pify(ssb.friends.get)({})) as any;
+    spinner?.start('Generating follow graph');
+    graph = (await pify(ssb.friends.graph)()) as any;
+    // Convert from new style (numbers) to old style (boolean/null)
+    for (const source of Object.keys(graph!)) {
+      for (const dest of Object.keys(graph![source])) {
+        const num = graph![source][dest] as any as number;
+        if (num === 1) graph![source][dest] = true;
+        else if (num === -1) graph![source][dest] = false;
+        else if (num < -1) graph![source][dest] = null;
+      }
+    }
     const graphFilepath = path.join(outputDir, 'follow-graph.json');
     const graphJSON = JSON.stringify(graph, null, 2);
     await fs.promises.writeFile(graphFilepath, graphJSON, {encoding: 'utf-8'});
+    spinner?.succeed('Generated follow graph');
   }
 
   await pify<unknown>(ssb.close)();
@@ -112,6 +128,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       indexFeedTypes,
       authors,
       graph,
+      spinner,
       outputDir,
     );
   }

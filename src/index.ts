@@ -95,9 +95,18 @@ export = async function generateFixture(opts?: Partial<Opts>) {
 
   if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
 
-  let graph: Record<FeedId, Record<FeedId, number>> | undefined;
+  let graph: Record<FeedId, Record<FeedId, boolean | null>> | undefined;
   if (followGraph) {
-    graph = (await pify(ssb.friends.get)({})) as any;
+    graph = (await pify(ssb.friends.graph)()) as any;
+    // Convert from new style (numbers) to old style (boolean/null)
+    for (const source of Object.keys(graph!)) {
+      for (const dest of Object.keys(graph![source])) {
+        const num = graph![source][dest] as any as number;
+        if (num === 1) graph![source][dest] = true;
+        else if (num === -1) graph![source][dest] = false;
+        else if (num < -1) graph![source][dest] = null;
+      }
+    }
     const graphFilepath = path.join(outputDir, 'follow-graph.json');
     const graphJSON = JSON.stringify(graph, null, 2);
     await fs.promises.writeFile(graphFilepath, graphJSON, {encoding: 'utf-8'});

@@ -30,13 +30,13 @@
     "ssb-caps": "^1.1.0",
     "ssb-config": "^3.4.5",
     "ssb-db": "20.3.0",
-    "ssb-db2": "^2.5.2",
-    "ssb-friends": "^4.4.7",
+    "ssb-db2": "^2.6.0",
+    "ssb-friends": "^5.1.0",
     "ssb-index-feed-writer": "~0.6.0",
     "ssb-keys": "^8.1.0",
     "ssb-logging": "1.0.0",
     "ssb-master": "1.0.3",
-    "ssb-meta-feeds": "~0.21.0",
+    "ssb-meta-feeds": "~0.23.0",
     "yargs": "^17.0.1"
   },
   "devDependencies": {

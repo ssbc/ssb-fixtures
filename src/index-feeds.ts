@@ -77,7 +77,7 @@ function startSbot(dir: string) {
   // In case publishAs was never called:
   setTimeout(() => {
     if (!timeout) timeout = setTimeout(deferred.resolve, 3000);
-  }, 10000)
+  }, 10000);
 
   return sbot;
 }
@@ -118,7 +118,7 @@ export async function writeIndexFeeds(
   indexFeedsPercentage: number,
   indexFeedTypes: string,
   authors: Array<Author>,
-  followGraph: Record<FeedId, Record<FeedId, number>> | undefined,
+  followGraph: Record<FeedId, Record<FeedId, any>> | undefined,
   outputDir: string,
 ) {
   // Pick which authors will write indexFeeds

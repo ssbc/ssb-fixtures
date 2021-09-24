@@ -74,6 +74,10 @@ function startSbot(dir: string) {
     timeout.refresh();
     originalPublishAs(...args);
   };
+  // In case publishAs was never called:
+  setTimeout(() => {
+    if (!timeout) timeout = setTimeout(deferred.resolve, 3000);
+  }, 10000)
 
   return sbot;
 }
@@ -112,6 +116,7 @@ function sanitizeMsg(msg: any) {
 export async function writeIndexFeeds(
   seed: string,
   indexFeedsPercentage: number,
+  indexFeedTypes: string,
   authors: Array<Author>,
   followGraph: Record<FeedId, Record<FeedId, number>> | undefined,
   outputDir: string,
@@ -132,10 +137,14 @@ export async function writeIndexFeeds(
     await migrateDone(sbot);
 
     const author = authors[i].id;
-    for (const type of ['vote', 'post', 'contact', 'about']) {
-      await pify(sbot.indexFeedWriter.start)({author, type, private: false});
+    for (let type of indexFeedTypes.split(',')) {
+      if (type === 'private') {
+        type = null as any;
+        await pify(sbot.indexFeedWriter.start)({author, type, private: true});
+      } else {
+        await pify(sbot.indexFeedWriter.start)({author, type, private: false});
+      }
     }
-    await pify(sbot.indexFeedWriter.start)({author, type: null, private: true});
 
     await sbot._indexWritingComplete;
 

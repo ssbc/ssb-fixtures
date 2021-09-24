@@ -17,6 +17,7 @@ test('generation supports simulating meta feeds and index feeds', (t) => {
       messages: M,
       authors: A,
       indexFeeds: I,
+      indexFeedTypes: 'about,vote,contact,post,private'
     },
     async (err, msgs, cleanup, outputDir) => {
       // (seed + announce + add main + add indexes + add 5 index) * A

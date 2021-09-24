@@ -8,6 +8,7 @@ export const ALL_KEYS = false;
 export const FOLLOW_GRAPH = false;
 export const REPORT = true;
 export const VERBOSE = false;
+export const PROGRESS = false;
 export const INDEX_FEEDS = 0;
 export const INDEX_FEED_TYPES = 'about,contact';
 export const randomSeed = generateRandomSeed;

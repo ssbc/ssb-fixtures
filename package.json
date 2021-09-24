@@ -22,6 +22,7 @@
     "lorem-ipsum": "2.0.3",
     "mkdirp": "^1.0.4",
     "monotonic-timestamp": "staltz/mock-monotonic-timestamp",
+    "ora": "^5.0.0",
     "p-defer": "^3.0.0",
     "promisify-4loc": "1.0.0",
     "pull-stream-util": "^0.1.2",

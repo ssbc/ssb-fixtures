@@ -3,6 +3,7 @@ import path = require('path');
 import os = require('os');
 import {FeedId} from 'ssb-typescript';
 import util = require('util');
+import {Ora} from 'ora';
 import DeferredPromise = require('p-defer');
 const pify = util.promisify;
 const rimraf = require('rimraf');
@@ -15,6 +16,7 @@ const caps = require('ssb-caps');
 const fromEvent = require('pull-stream-util/from-event');
 const SecretStack = require('secret-stack');
 const ssbKeys = require('ssb-keys');
+const sleep = require('util').promisify(setTimeout);
 import {Author} from './types';
 import {paretoSample} from './sample';
 
@@ -119,8 +121,10 @@ export async function writeIndexFeeds(
   indexFeedTypes: string,
   authors: Array<Author>,
   followGraph: Record<FeedId, Record<FeedId, any>> | undefined,
+  spinner: Ora | null,
   outputDir: string,
 ) {
+  spinner?.start('Generating index feeds');
   // Pick which authors will write indexFeeds
   const totalIndexAuthors = Math.round(
     (authors.length * indexFeedsPercentage) / 100,
@@ -128,16 +132,23 @@ export async function writeIndexFeeds(
   const sampledAuthorIdxs = sampleAuthors(seed, authors, totalIndexAuthors);
 
   // For each picked author:
-  for (const i of sampledAuthorIdxs) {
+  for (let i = 1; i <= totalIndexAuthors; i++) {
+    const idx = sampledAuthorIdxs[i - 1];
+    if (spinner) {
+      spinner.text = `Generating index feeds [setup] for author ${i} / ${totalIndexAuthors}`;
+    }
     const lowestTimestamp = Date.now();
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'index-feed-writer'));
     copyFlumelogOffset(outputDir, tempDir);
-    copySecret(outputDir, tempDir, i);
+    copySecret(outputDir, tempDir, idx);
     const sbot = startSbot(tempDir);
     await migrateDone(sbot);
 
-    const author = authors[i].id;
+    const author = authors[idx].id;
     for (let type of indexFeedTypes.split(',')) {
+      if (spinner) {
+        spinner.text = `Generating index feeds (${type}) for author ${i} / ${totalIndexAuthors}`;
+      }
       if (type === 'private') {
         type = null as any;
         await pify(sbot.indexFeedWriter.start)({author, type, private: true});
@@ -159,7 +170,11 @@ export async function writeIndexFeeds(
       // FIXME: update this object somehow
     }
 
+    await sleep(500); // wait for indexes to be written properly
     await pify(sbot.close)();
+    await sleep(500); // wait for indexes to be written properly
     rimraf.sync(tempDir);
   }
+
+  spinner?.succeed(`Generated index feeds for ${totalIndexAuthors} authors`);
 }

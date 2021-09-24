@@ -13,6 +13,7 @@ export type Opts = {
   indexFeedTypes: string;
   report: boolean;
   latestmsg: number;
+  progress: boolean;
   verbose: boolean;
 };
 

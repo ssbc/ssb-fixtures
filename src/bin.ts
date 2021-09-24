@@ -38,6 +38,11 @@ const argv = yargs(process.argv)
     describe: 'Percentage (0–100) of authors to write index feeds',
   })
 
+  .option('indexFeedTypes', {
+    default: defaults.INDEX_FEED_TYPES,
+    describe: 'Comma-separated msg types for indexes',
+  })
+
   .describe('report', 'Create a report.md file in the fixture')
   .default('report', defaults.REPORT)
 

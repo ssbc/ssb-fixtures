@@ -31,6 +31,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const report = opts?.report ?? defaults.REPORT;
   const latestmsg = (opts?.latestmsg ?? numMessages) - 1;
   const indexFeedsPercentage = opts?.indexFeeds ?? defaults.INDEX_FEEDS;
+  const indexFeedTypes = opts?.indexFeedTypes ?? defaults.INDEX_FEED_TYPES;
   const verbose = opts?.verbose ?? defaults.VERBOSE;
 
   const authorsKeys = generateAuthors(seed, numAuthors);
@@ -108,6 +109,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
     await writeIndexFeeds(
       seed,
       indexFeedsPercentage,
+      indexFeedTypes,
       authors,
       graph,
       outputDir,

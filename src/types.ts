@@ -10,6 +10,7 @@ export type Opts = {
   allkeys: boolean;
   followGraph: boolean;
   indexFeeds: number;
+  indexFeedTypes: string;
   report: boolean;
   latestmsg: number;
   verbose: boolean;

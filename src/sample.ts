@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+//
+// SPDX-License-Identifier: MIT
+
 const {sample, prng} = require('implausible');
 
 let __x = 0;

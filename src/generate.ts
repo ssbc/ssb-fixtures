@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+//
+// SPDX-License-Identifier: MIT
+
 import crypto = require('crypto');
 const ssbKeys = require('ssb-keys');
 import {LoremIpsum} from 'lorem-ipsum';

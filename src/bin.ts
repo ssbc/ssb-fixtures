@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+
+// SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+//
+// SPDX-License-Identifier: MIT
+
 const yargs = require('yargs/yargs');
 import defaults = require('./defaults');
 import generate = require('./index');

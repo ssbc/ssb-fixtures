@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+//
+// SPDX-License-Identifier: MIT
+
 import fs = require('fs');
 import path = require('path');
 import pify = require('promisify-4loc');

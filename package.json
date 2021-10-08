@@ -5,7 +5,9 @@
   "main": "lib/index.js",
   "bin": "lib/bin.js",
   "files": [
-    "lib/*"
+    "lib/*",
+    "package.json.license",
+    "LICENSES/*"
   ],
   "scripts": {
     "compile": "tsc",

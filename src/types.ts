@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+//
+// SPDX-License-Identifier: MIT
+
 import {Msg, FeedId} from 'ssb-typescript';
 import freq = require('./frequencies');
 

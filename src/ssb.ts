@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+//
+// SPDX-License-Identifier: MIT
+
 const SecretStack = require('secret-stack');
 const makeConfig = require('ssb-config/inject');
 const caps = require('ssb-caps');

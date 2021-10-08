@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
 # ssb-fixtures
 
 A generator of fake ("Lorem ipsum") .ssb databases.

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+#
+# SPDX-License-Identifier: Unlicense
+
 name: CI
 
 on:
@@ -7,6 +11,13 @@ on:
     branches: [main]
 
 jobs:
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v1
+
   test:
     name: Test
 

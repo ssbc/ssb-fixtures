@@ -10,17 +10,12 @@ export = {
    * Not normalized.
    */
   MSG_TYPE_FREQUENCIES: {
-    vote: 269447,
-    post: 173264,
-    contact: 167326,
-    private: 93208,
-    // channel: 57087,
-    about: 33476,
-    // chess_move: 24199,
-    // pub: 17646,
-    // 'image/jpeg': 10681,
-    // 'git-update': 8915,
-    // 'image/png': 5809,
+    vote: 291505,
+    post: 168091,
+    contact: 59912,
+    private: 82034,
+    about: 11528,
+    other: 62462
   },
 
   /**

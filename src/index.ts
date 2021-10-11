@@ -6,7 +6,7 @@ import fs = require('fs');
 import path = require('path');
 import pify = require('promisify-4loc');
 import {ContactContent, FeedId, Msg} from 'ssb-typescript';
-import ora = require('ora')
+import ora = require('ora');
 import {makeSSB} from './ssb';
 import {generateAuthors, generateMsgContent} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
@@ -25,6 +25,16 @@ function* range(start: number, end: number) {
   }
 }
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err, origin) => {
+  console.error('Uncaught Exception at ', origin, ':', err);
+  process.exit(1);
+});
+
 export = async function generateFixture(opts?: Partial<Opts>) {
   const outputDir = opts?.outputDir ?? defaults.outputDir();
   const numMessages = Math.max(opts?.messages ?? defaults.MESSAGES, 1);
@@ -40,7 +50,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const verbose = opts?.verbose ?? defaults.VERBOSE;
   const progress = opts?.progress ?? defaults.PROGRESS;
 
-  const spinner = progress ? ora('Setting up').start() : null
+  const spinner = progress ? ora('Setting up').start() : null;
   const authorsKeys = generateAuthors(seed, numAuthors);
   const ssb = makeSSB(authorsKeys, outputDir, followGraph);
 
@@ -100,7 +110,7 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       }
     }
   }
-  spinner?.succeed(`Generated ${numMessages} messages`)
+  spinner?.succeed(`Generated ${numMessages} messages`);
 
   if (report) writeReportFile(msgs, msgsByType, authors, follows, outputDir);
 

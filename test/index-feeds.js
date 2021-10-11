@@ -17,15 +17,16 @@ test('generation supports simulating meta feeds and index feeds', (t) => {
   generateAndTest(
     {
       outputDir: 'ssb-fixtures-test-index-feeds',
-      seed: 'banana',
+      seed: 'apple',
       messages: M,
+      progress: true,
       authors: A,
       indexFeeds: I,
-      indexFeedTypes: 'about,vote,contact,post,private'
+      indexFeedTypes: 'about,vote,contact,post,private,other'
     },
     async (err, msgs, cleanup, outputDir) => {
-      // (seed + announce + add main + add indexes + add 5 index) * A
-      const META_MSG_COUNT = 9 * A;
+      // (seed + announce + add main + add indexes + add 6 index) * A
+      const META_MSG_COUNT = 10 * A;
       // Seems like we should have only `M` index feed msgs, right?
       // But it's truly `M + A` because each author will publish a **private**
       // message `metafeed/seed` and this message will be taken into account

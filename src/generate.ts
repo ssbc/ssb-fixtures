@@ -292,6 +292,11 @@ function generateAboutContent(
   return content;
 }
 
+function generateOtherContent(seed: string): Content {
+  const number = randomInt(seed, 1, 1000);
+  return {type: 'other', number, etc: 'Does not matter'} as any;
+}
+
 export async function generateMsgContent(
   ssb: any,
   seed: string,
@@ -330,7 +335,9 @@ export async function generateMsgContent(
     return generatePrivate(ssb, seed, i, latestmsg, msgsByType, a, as);
   } else if (type === 'post') {
     return generatePostContent(seed, i, latestmsg, msgsByType, authors);
+  } else if (type === 'other') {
+    return generateOtherContent(seed);
   } else {
-    return generatePostContent(seed, i, latestmsg, msgsByType, authors);
+    throw new Error('Cannot generate unknown msg type ' + type);
   }
 }

@@ -88,17 +88,16 @@ test('can generate about msgs', (t) => {
   generateAndTest(
     {
       outputDir: 'ssb-fixtures-test-3',
-      seed: 'rosette',
-      messages: 5,
+      seed: 'food',
+      messages: 8,
       authors: 1,
     },
     (err, msgs, cleanup) => {
       t.error(err, 'no error');
-      t.equals(msgs.length, 5, 'there are 5 msgs');
+      t.equals(msgs.length, 8, 'there are 8 msgs');
 
-      t.equals(msgs[3].value.content.type, 'about', '4th msg is an about');
-      t.equals(typeof msgs[3].value.content.image, 'object', '"image" object');
-      t.true(Ref.isBlob(msgs[3].value.content.image.link), 'link is blob');
+      t.equals(msgs[6].value.content.type, 'about', '4th msg is an about');
+      t.equals(msgs[6].value.content.name, 'tempor dolore', '"name" field');
 
       cleanup(() => {
         t.end();
@@ -137,16 +136,16 @@ test('latestmsg and same seed can continue generating', (t) => {
         'third message matches',
       );
 
-      t.deepEquals(
-        msgs[3],
-        require('./fixtures/deterministic/3-extension.json'),
-        'forth message matches',
+      t.equals(
+        typeof msgs[3].value.content,
+        'string',
+        'forth message is private',
       );
 
-      t.deepEquals(
-        msgs[4],
-        require('./fixtures/deterministic/4-extension.json'),
-        'fifth message matches',
+      t.equals(
+        msgs[4].value.content.type,
+        'other',
+        'fifth message is an other',
       );
 
       cleanup(() => {

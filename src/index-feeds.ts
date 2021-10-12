@@ -67,6 +67,7 @@ function startSbot(dir: string) {
       db2: {
         automigrate: true,
         dangerouslyKillFlumeWhenMigrated: true,
+        _ssbFixtures: true,
       },
     });
 

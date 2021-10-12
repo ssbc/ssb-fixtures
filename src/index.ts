@@ -10,7 +10,7 @@ import ora = require('ora');
 import {makeSSB} from './ssb';
 import {generateAuthors, generateMsgContent} from './generate';
 import {Opts, MsgsByType, Follows, Blocks} from './types';
-import {paretoSample} from './sample';
+import {paretoSample, reset as resetRNG} from './sample';
 import slimify from './slimify';
 import writeReportFile from './report';
 import * as defaults from './defaults';
@@ -49,6 +49,8 @@ export = async function generateFixture(opts?: Partial<Opts>) {
   const indexFeedTypes = opts?.indexFeedTypes ?? defaults.INDEX_FEED_TYPES;
   const verbose = opts?.verbose ?? defaults.VERBOSE;
   const progress = opts?.progress ?? defaults.PROGRESS;
+
+  resetRNG();
 
   const spinner = progress ? ora('Setting up').start() : null;
   const authorsKeys = generateAuthors(seed, numAuthors);

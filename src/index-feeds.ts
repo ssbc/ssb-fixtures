@@ -169,10 +169,6 @@ export async function writeIndexFeeds(
     }
     await pify(flumedb.close)();
 
-    if (followGraph) {
-      // FIXME: update this object somehow
-    }
-
     await sleep(500); // wait for indexes to be written properly
     await pify(sbot.close)();
     await sleep(500); // wait for indexes to be written properly

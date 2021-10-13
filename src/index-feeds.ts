@@ -57,7 +57,7 @@ function copySecret(origDir: string, destDir: string, i: number) {
 }
 
 function startSbot(dir: string) {
-  const sbot = SecretStack({caps})
+  return SecretStack({caps})
     .use(require('ssb-db2'))
     .use(require('ssb-meta-feeds'))
     .use(require('ssb-index-feed-writer'))
@@ -70,23 +70,6 @@ function startSbot(dir: string) {
         _ssbFixtures: true,
       },
     });
-
-  // Patch `publishAs` so we signal (via debounce) when index writing is done
-  const originalPublishAs = sbot.db.publishAs;
-  const deferred = DeferredPromise();
-  sbot._indexWritingComplete = deferred.promise;
-  let timeout: null | NodeJS.Timeout = null;
-  sbot.db.publishAs = (...args: Array<any>) => {
-    if (!timeout) timeout = setTimeout(deferred.resolve, 3000);
-    timeout.refresh();
-    originalPublishAs(...args);
-  };
-  // In case publishAs was never called:
-  setTimeout(() => {
-    if (!timeout) timeout = setTimeout(deferred.resolve, 3000);
-  }, 10000);
-
-  return sbot;
 }
 
 function migrateDone(sbot: unknown) {
@@ -161,8 +144,23 @@ export async function writeIndexFeeds(
         await pify(sbot.indexFeedWriter.start)({author, type, private: false});
       }
     }
-
-    await sbot._indexWritingComplete;
+    await Promise.all(
+      indexFeedTypes
+        .split(',')
+        .map((type) =>
+          type === 'private'
+            ? pify(sbot.indexFeedWriter.doneOld)({
+                author,
+                type: null,
+                private: true,
+              })
+            : pify(sbot.indexFeedWriter.doneOld)({
+                author,
+                type,
+                private: false,
+              }),
+        ),
+    );
 
     const flumedb = openFlumedb(outputDir);
     for await (const msg of recentlyWrittenMsgs(lowestTimestamp, sbot)) {

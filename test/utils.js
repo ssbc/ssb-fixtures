@@ -10,7 +10,6 @@ const codec = require('flumecodec');
 const Flume = require('flumedb');
 const rimraf = require('rimraf');
 const pull = require('pull-stream');
-const fromEvent = require('pull-stream-util/from-event');
 const __ts = require('monotonic-timestamp');
 const __sampling = require('../lib/sample');
 const generate = require('../lib/index');
@@ -43,7 +42,7 @@ function generateAndTest(opts, cb) {
 function db2MigrationDone(sbot) {
   return new Promise((resolve, reject) => {
     pull(
-      fromEvent('ssb:db2:migrate:progress', sbot),
+      sbot.db2migrate.progress(),
       pull.filter((x) => x === 1),
       pull.take(1),
       pull.collect((err) => {

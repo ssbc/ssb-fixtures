@@ -8,7 +8,6 @@ import os = require('os');
 import {FeedId} from 'ssb-typescript';
 import util = require('util');
 import {Ora} from 'ora';
-import DeferredPromise = require('p-defer');
 const pify = util.promisify;
 const rimraf = require('rimraf');
 const pull = require('pull-stream');
@@ -17,7 +16,6 @@ const Flume = require('flumedb');
 const OffsetLog = require('flumelog-offset');
 const {where, gt, toAsyncIter} = require('ssb-db2/operators');
 const caps = require('ssb-caps');
-const fromEvent = require('pull-stream-util/from-event');
 const SecretStack = require('secret-stack');
 const ssbKeys = require('ssb-keys');
 const sleep = require('util').promisify(setTimeout);
@@ -72,10 +70,10 @@ function startSbot(dir: string) {
     });
 }
 
-function migrateDone(sbot: unknown) {
+function migrateDone(sbot: any) {
   return new Promise((resolve, reject) => {
     pull(
-      fromEvent('ssb:db2:migrate:progress', sbot),
+      sbot.db2migrate.progress(),
       pull.filter((x: number) => x === 1),
       pull.take(1),
       pull.collect((err: any) => {
@@ -108,7 +106,6 @@ export async function writeIndexFeeds(
   indexFeedsPercentage: number,
   indexFeedTypes: string,
   authors: Array<Author>,
-  followGraph: Record<FeedId, Record<FeedId, any>> | undefined,
   spinner: Ora | null,
   outputDir: string,
 ) {

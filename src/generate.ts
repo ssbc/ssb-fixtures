@@ -33,7 +33,7 @@ export function generateRandomSeed() {
     .randomBytes(64)
     .toString('ascii')
     .replace(/\W/g, '')
-    .substr(0, 24);
+    .substring(0, 24);
 }
 
 function generateBlobId() {

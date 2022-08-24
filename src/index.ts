@@ -143,7 +143,6 @@ export = async function generateFixture(opts?: Partial<Opts>) {
       indexFeedsPercentage,
       indexFeedTypes,
       authors,
-      graph,
       spinner,
       outputDir,
     );

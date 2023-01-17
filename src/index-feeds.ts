@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 Andre 'Staltz' Medeiros
+// SPDX-FileCopyrightText: 2021-2023 Andre 'Staltz' Medeiros
 //
 // SPDX-License-Identifier: MIT
 
@@ -54,11 +54,16 @@ function copySecret(origDir: string, destDir: string, i: number) {
   );
 }
 
-function startSbot(dir: string) {
+function startSbot(dir: string, seed: string) {
+  const metafeedSeed = Buffer.from(
+    ('metafeed:' + seed).slice(0, 32).padStart(32, '0'),
+    'ascii',
+  );
   return SecretStack({caps})
     .use(require('ssb-db2'))
+    .use(require('ssb-bendy-butt'))
     .use(require('ssb-meta-feeds'))
-    .use(require('ssb-index-feed-writer'))
+    .use(require('ssb-index-feeds'))
     .call(null, {
       path: dir,
       keys: ssbKeys.loadOrCreateSync(path.join(dir, 'secret')),
@@ -66,6 +71,9 @@ function startSbot(dir: string) {
         automigrate: true,
         dangerouslyKillFlumeWhenMigrated: true,
         _ssbFixtures: true,
+      },
+      metafeeds: {
+        seed: metafeedSeed,
       },
     });
 }
@@ -123,10 +131,10 @@ export async function writeIndexFeeds(
       spinner.text = `Generating index feeds [setup] for author ${i} / ${totalIndexAuthors}`;
     }
     const lowestTimestamp = Date.now();
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'index-feed-writer'));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'index-feeds'));
     copyFlumelogOffset(outputDir, tempDir);
     copySecret(outputDir, tempDir, idx);
-    const sbot = startSbot(tempDir);
+    const sbot = startSbot(tempDir, seed);
     await migrateDone(sbot);
 
     const author = authors[idx].id;
@@ -136,9 +144,9 @@ export async function writeIndexFeeds(
       }
       if (type === 'private') {
         type = null as any;
-        await pify(sbot.indexFeedWriter.start)({author, type, private: true});
+        await pify(sbot.indexFeeds.start)({author, type, private: true});
       } else {
-        await pify(sbot.indexFeedWriter.start)({author, type, private: false});
+        await pify(sbot.indexFeeds.start)({author, type, private: false});
       }
     }
     await Promise.all(
@@ -146,16 +154,8 @@ export async function writeIndexFeeds(
         .split(',')
         .map((type) =>
           type === 'private'
-            ? pify(sbot.indexFeedWriter.doneOld)({
-                author,
-                type: null,
-                private: true,
-              })
-            : pify(sbot.indexFeedWriter.doneOld)({
-                author,
-                type,
-                private: false,
-              }),
+            ? pify(sbot.indexFeeds.doneOld)({author, type: null, private: true})
+            : pify(sbot.indexFeeds.doneOld)({author, type, private: false}),
         ),
     );
 

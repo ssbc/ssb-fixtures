@@ -25,8 +25,10 @@ test('generation supports simulating meta feeds and index feeds', (t) => {
       indexFeedTypes: 'about,vote,contact,post,private,other'
     },
     async (err, msgs, cleanup, outputDir) => {
-      // (seed + announce + add main + add indexes + add 6 index) * A
-      const META_MSG_COUNT = 10 * A;
+      // (seed + announce + add main + add v1 + add ~shards + add 6 index) * A
+      // Should be `11 * A`, but "~shards" means we dont know exactly how many
+      // shards there will be, so we use the hardcoded result instead.
+      const META_MSG_COUNT = 68; // 11 * A;
       // Seems like we should have only `M` index feed msgs, right?
       // But it's truly `M + A` because each author will publish a **private**
       // message `metafeed/seed` and this message will be taken into account
@@ -42,6 +44,9 @@ test('generation supports simulating meta feeds and index feeds', (t) => {
 
       const sbot = SecretStack({caps: require('ssb-caps')})
         .use(require('ssb-db2'))
+        .use(require('ssb-bendy-butt'))
+        .use(require('ssb-meta-feeds'))
+        .use(require('ssb-index-feeds'))
         .call(null, {
           path: outputDir,
           keys: ssbKeys.loadOrCreateSync(path.join(outputDir, 'secret')),

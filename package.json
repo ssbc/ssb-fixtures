@@ -1,6 +1,6 @@
 {
   "name": "ssb-fixtures",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Generate a simulated .ssb folder",
   "main": "lib/index.js",
   "bin": "lib/bin.js",
